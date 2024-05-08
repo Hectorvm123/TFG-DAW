@@ -205,6 +205,10 @@ class Migrator_indexeo extends Module
                 $this->populateProductCarrier($conn,$prefix);
                 $this->populateProductCountryTax($conn,$prefix);
                 $this->populateProductDownload($conn,$prefix);
+                $this->populateProductSale($conn,$prefix);
+                $this->populateProductSupplier($conn,$prefix);
+                $this->populateProductTag($conn,$prefix);
+                $this->populateWareHouseProductLocation($conn,$prefix);
 
 
             }
@@ -483,7 +487,6 @@ class Migrator_indexeo extends Module
                     `token`,
                     `date_add`,
                     `date_upd`
-                    
 
                 ) 
                 VALUES (
@@ -1371,8 +1374,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
-
     public function populateProductDownload($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "product_download WHERE 1");
@@ -1412,11 +1413,127 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
+    public function populateProductSale($conn, $prefix){
+            try {
+                $query = $conn->prepare("SELECT * FROM " .$prefix. "product_sale WHERE 1");
+                $query->execute();
 
+                Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_sale WHERE 1;");
+                foreach($query->fetchAll() as $key=>$value) {
+                    $sql = "INSERT INTO " . _DB_PREFIX_ . "product_sale (
+                        `id_product`, 
+                        `quantity`,
+                        `sale_nbr`,
+                        `date_upd`
+                    ) 
+                    VALUES (
+                        '" . pSQL($value['id_product']) . "', 
+                        '" . pSQL($value['quantity']) . "',
+                        '" . pSQL($value['sale_nbr']) . "',
+                        '" . pSQL($value['date_upd']) . "'
+                    )";
+                    Db::getInstance()->execute($sql);
+                }
+            }
+            catch(PDOException $exception) {
+                echo "Error: " . $exception->getMessage();
+            }
+            // Cerrar conexion
+            $conn = null;
+    }
 
+    public function populateProductSupplier($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_supplier WHERE 1");
+            $query->execute();
 
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_supplier WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "product_supplier (
+                    `id_product`, 
+                    `id_product_supplier`, 
+                    `id_product_attribute`,
+                    `id_supplier`,
+                    `product_supplier_reference`,
+                    `product_supplier_price_te`,
+                    `id_currency`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product']) . "', 
+                    '" . pSQL($value['id_product_supplier']) . "', 
+                    '" . pSQL($value['id_product_attribute']) . "',
+                    '" . pSQL($value['id_supplier']) . "',
+                    '" . pSQL($value['product_supplier_reference']) . "',
+                    '" . pSQL($value['product_supplier_price_te']) . "',
+                    '" . pSQL($value['id_currency']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
 
+    public function populateProductTag($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_tag WHERE 1");
+            $query->execute();
 
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_tag WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "product_tag (
+                    `id_product`, 
+                    `id_tag`,
+                    `id_lang`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product']) . "', 
+                    '" . pSQL($value['id_tag']) . "',
+                    1
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateWareHouseProductLocation($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "warehouse_product_location WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."warehouse_product_location WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "warehouse_product_location (
+                    `id_product`, 
+                    `id_warehouse_product_location`, 
+                    `id_product_attribute`,
+                    `id_warehouse`,
+                    `location`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product']) . "', 
+                    '" . pSQL($value['id_warehouse_product_location']) . "', 
+                    '" . pSQL($value['id_product_attribute']) . "',
+                    '" . pSQL($value['id_warehouse']) . "',
+                    '" . pSQL($value['location']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
 
 
 
