@@ -193,12 +193,12 @@ class Migrator_indexeo extends Module
                 $this->popullateLayeredCategory($conn,$prefix);
                 $this->populateCategoryProduct($conn,$prefix);
                 $this->populateProduct($conn,$prefix);
-                //$this->populateProductLang($conn,$prefix);
-                //$this->populateProductShop($conn,$prefix);
-                //$this->populateFeatureProduct($conn,$prefix);
-                //$this->populateLayeredProductAttribute($conn,$prefix);
-                //$this->populateProductAttachment($conn,$prefix);
-                //$this->populateProductAttribute($conn,$prefix);
+                $this->populateProductLang($conn,$prefix);
+                $this->populateProductShop($conn,$prefix);
+                $this->populateFeatureProduct($conn,$prefix);
+                $this->populateLayeredProductAttribute($conn,$prefix);
+                $this->populateProductAttachment($conn,$prefix);
+                $this->populateProductAttribute($conn,$prefix);
 
 
             }
@@ -1210,7 +1210,7 @@ class Migrator_indexeo extends Module
                     0,
                     '" . pSQL($value['weight']) . "',
                     '" . pSQL($value['unit_price_impact']) . "',
-                    '" . pSQL($value['default_on']) . "',
+                    NULL,
                     '" . pSQL($value['minimal_quantity']) . "',
                     '" . pSQL($value['available_date']) . "'
 
