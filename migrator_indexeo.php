@@ -199,6 +199,12 @@ class Migrator_indexeo extends Module
                 $this->populateLayeredProductAttribute($conn,$prefix);
                 $this->populateProductAttachment($conn,$prefix);
                 $this->populateProductAttribute($conn,$prefix);
+                $this->populateProductAttributeCombination($conn,$prefix);
+                $this->populateProductAttributeImage($conn,$prefix);
+                $this->populateProductAttributeShop($conn,$prefix);
+                $this->populateProductCarrier($conn,$prefix);
+                $this->populateProductCountryTax($conn,$prefix);
+                $this->populateProductDownload($conn,$prefix);
 
 
             }
@@ -1163,9 +1169,6 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
-
-
-    
     
     public function populateProductAttribute($conn, $prefix){
         try {
@@ -1225,12 +1228,200 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
+    public function populateProductAttributeCombination($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_attribute_combination WHERE 1");
+            $query->execute();
 
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_attribute_combination WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO ". _DB_PREFIX_ ."product_attribute_combination (
+                    `id_attribute`, 
+                    `id_product_attribute`
+                    ) VALUES (
+                        '" . pSQL($value['id_attribute']) . "', 
+                        '" . pSQL($value['id_product_attribute']) . "'
+                        )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+    public function populateProductAttributeImage($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_attribute_image WHERE 1");
+            $query->execute();
 
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_attribute_image WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO ". _DB_PREFIX_ ."product_attribute_image (
+                    `id_image`, 
+                    `id_product_attribute`
+                    ) VALUES (
+                        '" . pSQL($value['id_image']) . "', 
+                        '" . pSQL($value['id_product_attribute']) . "'
+                        )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
 
+    public function populateProductAttributeShop($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_attribute_shop WHERE 1");
+            $query->execute();
 
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_attribute_shop WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "product_attribute_shop (
+                    `id_product`, 
+                    `id_product_attribute`, 
+                    `id_shop`,
+                    `wholesale_price`,
+                    `price`,
+                    `ecotax`,
+                    `weight`,
+                    `unit_price_impact`,
+                    `default_on`,
+                    `minimal_quantity`,
+                    `available_date`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product']) . "', 
+                    '" . pSQL($value['id_product_attribute']) . "', 
+                    '" . pSQL($value['id_shop']) . "',
+                    '" . pSQL($value['wholesale_price']) . "',
+                    '" . pSQL($value['price']) . "',
+                    '" . pSQL($value['ecotax']) . "',
+                    '" . pSQL($value['weight']) . "',
+                    '" . pSQL($value['unit_price_impact']) . "',
+                    NULL,
+                    '" . pSQL($value['minimal_quantity']) . "',
+                    '" . pSQL($value['available_date']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateProductCarrier($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_carrier WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_carrier WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO ". _DB_PREFIX_ ."product_carrier (
+                    `id_product`, 
+                    `id_carrier_reference`
+                    `id_shop`
+                    ) VALUES (
+                        '" . pSQL($value['id_product']) . "', 
+                        '" . pSQL($value['id_carrier_reference']) . "'
+                        '" . pSQL($value['id_shop']) . "'
+                        )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
     
-    
+    public function populateProductCountryTax($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_country_tax WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_country_tax WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "product_country_tax (
+                    `id_product`, 
+                    `id_country`, 
+                    `id_tax`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product']) . "', 
+                    '" . pSQL($value['id_country']) . "', 
+                    '" . pSQL($value['id_tax']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+
+
+    public function populateProductDownload($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_download WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_download WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "product_download (
+                    `id_product`, 
+                    `id_product_download`, 
+                    `display_name`,
+                    `date_add`,
+                    `date_expiration`,
+                    `nb_days_accessible`,
+                    `nb_downloadable`,
+                    `active`,
+                    `is_shareable`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product']) . "', 
+                    '" . pSQL($value['id_product_download']) . "', 
+                    '" . pSQL($value['display_name']) . "',
+                    '" . pSQL($value['date_add']) . "',
+                    '" . pSQL($value['date_expiration']) . "',
+                    '" . pSQL($value['nb_days_accessible']) . "',
+                    '" . pSQL($value['nb_downloadable']) . "',
+                    '" . pSQL($value['active']) . "',
+                    '" . pSQL($value['is_shareable']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+
+
+
+
+
+
+
+
+
+
     public function testConnection(){
         $host = $this->form_values['OLD_DB_HOST'];
         $username = $this->form_values['OLD_DB_USERNAME'];
