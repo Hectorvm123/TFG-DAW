@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>migrator_indexeo</name>
+	<displayName><![CDATA[Modulo de Migracion]]></displayName>
+	<version><![CDATA[1.0.0]]></version>
+	<description><![CDATA[Modulo para migrar prestashops con versiones antiguas, a las mas recientes]]></description>
+	<author><![CDATA[Hector Valls]]></author>
+	<tab><![CDATA[administration]]></tab>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+</module>
