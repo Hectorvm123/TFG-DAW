@@ -209,6 +209,12 @@ class Migrator_indexeo extends Module
                 $this->populateProductSupplier($conn,$prefix);
                 $this->populateProductTag($conn,$prefix);
                 $this->populateWareHouseProductLocation($conn,$prefix);
+                $this->populateGroup($conn,$prefix);
+                $this->populateGroupLang($conn,$prefix);
+                $this->populateGroupReduction($conn,$prefix);
+                $this->populateGroupShop($conn,$prefix);
+                $this->populateLayeredIndexableAttributeGroup($conn,$prefix);
+                $this->populateLayeredIndexableAttributeGroupLangValue($conn,$prefix);
 
 
             }
@@ -580,7 +586,18 @@ class Migrator_indexeo extends Module
                     '" . pSQL($value['date_upd']) . "',
                     '" . pSQL($value['position']) . "',
                     '" . pSQL($value['is_root_category']) . "'
-                )";
+                )
+                ON DUPLICATE KEY UPDATE 
+                id_parent = VALUES(id_parent), 
+                id_shop_default = VALUES(id_shop_default), 
+                level_depth = VALUES(level_depth), 
+                nleft = VALUES(nleft), 
+                nright = VALUES(nright), 
+                active = VALUES(active), 
+                date_add = VALUES(date_add), 
+                date_upd = VALUES(date_upd), 
+                position = VALUES(position), 
+                is_root_category = VALUES(is_root_category);";
                 Db::getInstance()->execute($sql);
             }
         }
@@ -1535,6 +1552,176 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
+    public function populateGroup($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "group WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."group WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "group (
+                    `id_group`, 
+                    `reduction`, 
+                    `price_display_method`,
+                    `show_prices`,
+                    `date_add`,
+                    `date_upd`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_group']) . "', 
+                    '" . pSQL($value['reduction']) . "', 
+                    '" . pSQL($value['price_display_method']) . "',
+                    '" . pSQL($value['show_prices']) . "',
+                    '" . pSQL($value['date_add']) . "',
+                    '" . pSQL($value['date_upd']) . "'
+
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateGroupLang($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "group_lang WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."group_lang WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "group_lang (
+                    `id_group`, 
+                    `id_lang`, 
+                    `name`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_group']) . "', 
+                    '" . pSQL($value['id_lang']) . "', 
+                    '" . pSQL($value['name']) . "'
+
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateGroupReduction($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "group_reduction WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."group_reduction WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "group_reduction (
+                    `id_group`, 
+                    `id_group_reduction`, 
+                    `id_category`,
+                    `reduction`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_group']) . "', 
+                    '" . pSQL($value['id_group_reduction']) . "', 
+                    '" . pSQL($value['id_category']) . "',
+                    '" . pSQL($value['reduction']) . "'
+
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateGroupShop($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "group_shop WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."group_shop WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "group_shop (
+                    `id_group`, 
+                    `id_shop`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_group']) . "', 
+                    '" . pSQL($value['id_shop']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateLayeredIndexableAttributeGroup($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "layered_indexable_attribute_group WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."layered_indexable_attribute_group WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "layered_indexable_attribute_group (
+                    `id_attribute_group`, 
+                    `indexable`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_attribute_group']) . "', 
+                    '" . pSQL($value['indexable']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateLayeredIndexableAttributeGroupLangValue($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "layered_indexable_attribute_group_lang_value WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."layered_indexable_attribute_group_lang_value WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "layered_indexable_attribute_group_lang_value (
+                    `id_attribute_group`, 
+                    `id_lang`,
+                    `url_name`,
+                    `meta_title`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_attribute_group']) . "', 
+                    '" . pSQL($value['id_lang']) . "',
+                    '" . pSQL($value['url_name']) . "',
+                    '" . pSQL($value['meta_title']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
 
 
 
