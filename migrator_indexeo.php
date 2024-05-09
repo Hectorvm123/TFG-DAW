@@ -217,6 +217,17 @@ class Migrator_indexeo extends Module
                 $this->populateWareHouseProductLocation($conn,$prefix);
 
 
+                // $this->populateProductComment($conn,$prefix);
+                // $this->populateProductCommentCriterion($conn,$prefix);
+                //$this->populateProductCommentCriterionCategory($conn,$prefix);
+                //$this->populateProductCommentCriterionLang($conn,$prefix);
+                //$this->populateProductCommentCriterionProduct($conn,$prefix);
+                //$this->populateProductCommentCriterionGrade($conn,$prefix);
+                //$this->populateProductCommentRepeat($conn,$prefix);
+                //$this->populateProductCommentUsefulness($conn,$prefix);
+
+
+
                 $this->populateGroup($conn,$prefix);
                 $this->populateAttributeGroup($conn,$prefix);
                 $this->populateAttributeGroupLang($conn,$prefix);
@@ -1607,6 +1618,237 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
+
+
+    public function populateProductComment($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_comment WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_comment WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "product_comment (
+                    `id_product`, 
+                    `id_product_comment`, 
+                    `id_customer`,
+                    `id_guest`,
+                    `title`,
+                    `content`,
+                    `customer_name`,
+                    `grade`,
+                    `validate`,
+                    `deleted`,
+                    `date_add`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product']) . "', 
+                    '" . pSQL($value['id_product_comment']) . "', 
+                    '" . pSQL($value['id_customer']) . "',
+                    '" . pSQL($value['id_guest']) . "',
+                    '" . pSQL($value['title']) . "',
+                    '" . pSQL($value['content']) . "',
+                    '" . pSQL($value['customer_name']) . "',
+                    '" . pSQL($value['grade']) . "',
+                    '" . pSQL($value['validate']) . "',
+                    '" . pSQL($value['deleted']) . "',
+                    '" . pSQL($value['date_add']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateProductCommentCriterion($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_comment_criterion WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_comment_criterion WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "product_comment_criterion (
+                    `id_product_comment_criterion`, 
+                    `id_product_comment_criterion_type`, 
+                    `active`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product_comment_criterion']) . "', 
+                    '" . pSQL($value['id_product_comment_criterion_type']) . "', 
+                    '" . pSQL($value['active']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateProductCommentCriterionCategory($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_comment_criterion_category WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_comment_criterion_category WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "product_comment_criterion_category (
+                    `id_product_comment_criterion`, 
+                    `id_category`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product_comment_criterion']) . "', 
+                    '" . pSQL($value['id_category']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+
+    public function populateProductCommentCriterionLang($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_comment_criterion_lang WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_comment_criterion_lang WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "product_comment_criterion_lang (
+                    `id_product_comment_criterion`, 
+                    `id_lang`, 
+                    `name`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product_comment_criterion']) . "', 
+                    '" . pSQL($value['id_lang']) . "', 
+                    '" . pSQL($value['name']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateProductCommentCriterionProduct($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_comment_criterion_product WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_comment_criterion_product WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "product_comment_criterion_product (
+                    `id_product_comment_criterion`, 
+                    `id_product`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product_comment_criterion']) . "', 
+                    '" . pSQL($value['id_product']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateProductCommentCriterionGrade($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_comment_criterion_grade WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_comment_criterion_grade WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "product_comment_criterion_grade (
+                    `id_product_comment_criterion`, 
+                    `id_product_comment`, 
+                    `grade`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product_comment_criterion']) . "', 
+                    '" . pSQL($value['id_product_comment']) . "', 
+                    '" . pSQL($value['grade']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateProductCommentRepeat($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_comment_repeat WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_comment_repeat WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "product_comment_repeat (
+                    `id_product_comment`, 
+                    `id_customer`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product_comment']) . "', 
+                    '" . pSQL($value['id_customer']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateProductCommentUsefulness($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "product_comment_usefulness WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."product_comment_usefulness WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "product_comment_usefulness (
+                    `id_product_comment`, 
+                    `id_customer`, 
+                    `usefulness`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_product_comment']) . "', 
+                    '" . pSQL($value['id_customer']) . "', 
+                    '" . pSQL($value['usefulness']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+
+
 
     public function populateAttributeGroup($conn, $prefix){
         try {
