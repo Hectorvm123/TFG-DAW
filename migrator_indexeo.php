@@ -238,6 +238,10 @@ class Migrator_indexeo extends Module
                 $this->populateGroupShop($conn,$prefix);
                 $this->populateLayeredIndexableAttributeGroup($conn,$prefix);
                 $this->populateLayeredIndexableAttributeGroupLangValue($conn,$prefix);
+                $this->populateShopGroup($conn,$prefix);
+                $this->populateSpecificPriceRuleConditionGroup($conn,$prefix);
+                $this->populateTaxRulesGroup($conn,$prefix);
+                $this->populateTaxRulesGroupShop($conn,$prefix);
 
 
 
@@ -2118,6 +2122,130 @@ class Migrator_indexeo extends Module
                     '" . pSQL($value['id_lang']) . "',
                     '" . pSQL($value['url_name']) . "',
                     '" . pSQL($value['meta_title']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateShopGroup($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "shop_group WHERE 1");
+            $query->execute();
+
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "shop_group (
+                    `id_shop_group`, 
+                    `name`,
+                    `share_customer`,
+                    `share_stock`,
+                    `active`,
+                    `deleted`,
+                    `color`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_shop_group']) . "', 
+                    '" . pSQL($value['name']) . "',
+                    '" . pSQL($value['share_customer']) . "',
+                    '" . pSQL($value['share_stock']) . "',
+                    '" . pSQL($value['active']) . "',
+                    '" . pSQL($value['deleted']) . "',
+                    0
+                )
+                ON DUPLICATE KEY UPDATE 
+                    id_shop_group = VALUES(id_shop_group), 
+                    name = VALUES(name), 
+                    share_customer = VALUES(share_customer), 
+                    share_stock = VALUES(share_stock), 
+                    active = VALUES(active), 
+                    deleted = VALUES(deleted);";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateSpecificPriceRuleConditionGroup($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "specific_price_rule_condition_group WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."specific_price_rule_condition_group WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "specific_price_rule_condition_group (
+                    `id_specific_price_rule_condition_group`, 
+                    `id_specific_price_rule`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_specific_price_rule_condition_group']) . "', 
+                    '" . pSQL($value['id_specific_price_rule']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateTaxRulesGroup($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "tax_rules_group WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."tax_rules_group WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "tax_rules_group (
+                    `id_tax_rules_group`, 
+                    `name`,
+                    `active`,
+                    `deleted`,
+                    `date_add`,
+                    `date_upd`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_tax_rules_group']) . "', 
+                    '" . pSQL($value['name']) . "',
+                    '" . pSQL($value['active']) . "',
+                    0,
+                    '" . pSQL(date("Y-m-d H:i:s")) . "',
+                    '" . pSQL(date("Y-m-d H:i:s")) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateTaxRulesGroupShop($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "tax_rules_group_shop WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."tax_rules_group_shop WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "tax_rules_group_shop (
+                    `id_tax_rules_group`, 
+                    `id_shop`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_tax_rules_group']) . "', 
+                    '" . pSQL($value['id_shop']) . "'
                 )";
                 Db::getInstance()->execute($sql);
             }
