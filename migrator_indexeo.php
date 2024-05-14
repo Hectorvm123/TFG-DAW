@@ -244,6 +244,12 @@ class Migrator_indexeo extends Module
                 $this->populateTaxRulesGroupShop($conn,$prefix);
 
 
+                $this->populateAttribute($conn,$prefix);
+                $this->populateAttributeShop($conn,$prefix);
+                $this->populateAttributeLang($conn,$prefix);
+                $this->populateLayeredIndexableAttributeLangValue($conn,$prefix);
+
+
 
 
             }
@@ -268,15 +274,30 @@ class Migrator_indexeo extends Module
 
 
     private function cambiarCookieKey(){
-        $parametersPath = _PS_ROOT_DIR_.'/app/config/parameters.php';
-        $content = file_get_contents($parametersPath);
+        $archivo = _PS_ROOT_DIR_.'/app/config/parameters.php';
         $newCookieKey = $this->form_values['OLD_COOKIE_KEY'];
 
-        // Aquí estarías reemplazando la línea que contiene el cookie_key actual
-        $newContent = preg_replace("/'cookie_key' => '[^']+'/", "'cookie_key' => '$newCookieKey'", $content);
+        $nueva_linea = "    'cookie_key' => '". $this->form_values['OLD_COOKIE_KEY'] ."',\n"; // Nueva línea que quieres agregar
 
-        // Escribir los cambios de vuelta al archivo
-        file_put_contents($parametersPath, $newContent);
+        // Abrir el archivo en modo lectura y escritura
+        if ($gestor = fopen($archivo, 'r+')) {
+            // Recorremos el archivo línea por línea
+            while (!feof($gestor)) {
+                $linea = fgets($gestor);
+                // Buscar la línea que contiene 'cookie_key'
+                if (strpos($linea, 'cookie_key') !== false) {
+                    // Posicionarse al inicio de la línea
+                    fseek($gestor, -strlen($linea), SEEK_CUR);
+                    // Escribir la nueva línea
+                    fwrite($gestor, $nueva_linea);
+                    break;
+                }
+            }
+            fclose($gestor); // Cerrar el archivo
+            echo "La línea que contiene 'cookie_key' ha sido modificada.";
+        } else {
+            echo "No se pudo abrir el archivo.";
+        }
     }
     public function populateEmployee($conn, $prefix){
         
@@ -1083,7 +1104,7 @@ class Migrator_indexeo extends Module
                         '" . pSQL($value['id_shop']) . "',
                         '" . pSQL($value['id_lang']) . "',
                         '" . pSQL($value['description']) . "',
-                        '" . pSQL($value['description_short']) . "',
+                        '<p>" . pSQL($value['description_short']) . "</p>',
                         '" . pSQL($value['link_rewrite']) . "',
                         '" . pSQL($value['meta_description']) . "',
                         '" . pSQL($value['meta_keywords']) . "',
@@ -2256,6 +2277,132 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
+
+
+
+    public function populateAttribute($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "attribute WHERE 1");
+            $query->execute();
+
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "attribute (
+                    `id_attribute`, 
+                    `id_attribute_group`,
+                    `color`,
+                    `position`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_attribute']) . "', 
+                    '" . pSQL($value['id_attribute_group']) . "',
+                    '" . pSQL($value['color']) . "',
+                    '" . pSQL($value['position']) . "'
+                )
+                ON DUPLICATE KEY UPDATE 
+                    id_attribute = VALUES(id_attribute), 
+                    id_attribute_group = VALUES(id_attribute_group), 
+                    color = VALUES(color), 
+                    position = VALUES(position);";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateAttributeShop($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "attribute_shop WHERE 1");
+            $query->execute();
+
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "attribute_shop (
+                    `id_attribute`, 
+                    `id_shop`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_attribute']) . "', 
+                    '" . pSQL($value['id_shop']) . "'
+                )
+                ON DUPLICATE KEY UPDATE 
+                    id_attribute = VALUES(id_attribute), 
+                    id_shop = VALUES(id_shop);";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateLayeredIndexableAttributeLangValue($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "layered_indexable_attribute_lang_value WHERE 1");
+            $query->execute();
+
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "layered_indexable_attribute_lang_value (
+                    `id_attribute`, 
+                    `id_lang`,
+                    `url_name`,
+                    `meta_title`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_attribute']) . "', 
+                    '" . pSQL($value['id_lang']) . "',
+                    '" . pSQL($value['url_name']) . "',
+                    '" . pSQL($value['meta_title']) . "'
+                )
+                ON DUPLICATE KEY UPDATE 
+                    id_attribute = VALUES(id_attribute), 
+                    id_lang = VALUES(id_lang), 
+                    url_name = VALUES(url_name), 
+                    meta_title = VALUES(meta_title);";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateAttributeLang($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "attribute_lang WHERE 1");
+            $query->execute();
+
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "attribute_lang (
+                    `id_attribute`, 
+                    `id_lang`,
+                    `name`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_attribute']) . "', 
+                    '" . pSQL($value['id_lang']) . "',
+                    '" . pSQL($value['name']) . "'
+                )
+                ON DUPLICATE KEY UPDATE 
+                    id_attribute = VALUES(id_attribute), 
+                    id_lang = VALUES(id_lang), 
+                    name = VALUES(name);";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
 
 
 
