@@ -175,10 +175,12 @@ class Migrator_indexeo extends Module
                 $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+                //  EMPLEADOS----------------------------------------------
                 //$this->populateEmployee($conn,$prefix);
                 //$this->populateEmployeeShop($conn,$prefix);
 
 
+                //  CLIENTES-----------------------------------------------
                 $this->populateCustomer($conn,$prefix);
                 $this->populateCustomerGroup($conn,$prefix);
                 $this->populateCustomerMessage($conn,$prefix);
@@ -187,6 +189,7 @@ class Migrator_indexeo extends Module
                 $this->populateMailAlertCustomerOOS($conn,$prefix);
 
 
+                //  CATEGORIAS-----------------------------------------------
                 $this->populateCategory($conn,$prefix);
                 $this->populateCategoryGroup($conn,$prefix);
                 $this->populateCategoryLang($conn,$prefix);
@@ -198,6 +201,7 @@ class Migrator_indexeo extends Module
                 $this->populateCategoryProduct($conn,$prefix);
 
 
+                // PRODUCTOS--------------------------------------------------
                 $this->populateProduct($conn,$prefix);
                 $this->populateProductLang($conn,$prefix);
                 $this->populateProductShop($conn,$prefix);
@@ -217,6 +221,8 @@ class Migrator_indexeo extends Module
                 $this->populateWareHouseProductLocation($conn,$prefix);
 
 
+                //  COMENTARIOS PRODUCTIOS (en la 1.6 no hay tablas para esto)
+
                 // $this->populateProductComment($conn,$prefix);
                 // $this->populateProductCommentCriterion($conn,$prefix);
                 //$this->populateProductCommentCriterionCategory($conn,$prefix);
@@ -228,6 +234,7 @@ class Migrator_indexeo extends Module
 
 
 
+                //  GRUPOS---------------------------------------------------------
                 $this->populateGroup($conn,$prefix);
                 $this->populateAttributeGroup($conn,$prefix);
                 $this->populateAttributeGroupLang($conn,$prefix);
@@ -244,11 +251,28 @@ class Migrator_indexeo extends Module
                 $this->populateTaxRulesGroupShop($conn,$prefix);
 
 
+
+                //  ATRIBUTOS---------------------------------------------------------
                 $this->populateAttribute($conn,$prefix);
                 $this->populateAttributeShop($conn,$prefix);
                 $this->populateAttributeLang($conn,$prefix);
                 $this->populateLayeredIndexableAttributeLangValue($conn,$prefix);
 
+
+                //  TRANSPORTISTAS---------------------------------------------------------
+                $this->populateCarrier($conn,$prefix);
+                $this->populateCarrierShop($conn,$prefix);
+                $this->populateCarrierLang($conn,$prefix);
+                $this->populateCarrierZone($conn,$prefix);
+                $this->populateOderCarrier($conn,$prefix);
+
+
+                // TAX----------------------------------------------------------------------
+                $this->populateTax($conn,$prefix);
+                $this->populateTaxLang($conn,$prefix);
+                $this->populateTaxRule($conn,$prefix);
+                $this->populateOrderDetailTax($conn,$prefix);
+                $this->populateOrderInvoiceTax($conn,$prefix);
 
 
 
@@ -2422,9 +2446,9 @@ class Migrator_indexeo extends Module
                     `url`,
                     `active`,
                     `deleted`,
-                    `sgipping_handling`,
-                    `range_hehavevior`,
-                    `id_module`,
+                    `shipping_handling`,
+                    `range_behavior`,
+                    `is_module`,
                     `is_free`,
                     `shipping_external`,
                     `need_range`,
@@ -2443,9 +2467,9 @@ class Migrator_indexeo extends Module
                     '" . pSQL($value['url']) . "',
                     '" . pSQL($value['active']) . "',
                     '" . pSQL($value['deleted']) . "',
-                    '" . pSQL($value['sgipping_handling']) . "',
-                    '" . pSQL($value['range_hehavevior']) . "',
-                    '" . pSQL($value['id_module']) . "',
+                    '" . pSQL($value['shipping_handling']) . "',
+                    '" . pSQL($value['range_behavior']) . "',
+                    '" . pSQL($value['is_module']) . "',
                     '" . pSQL($value['is_free']) . "',
                     '" . pSQL($value['shipping_external']) . "',
                     '" . pSQL($value['need_range']) . "',
@@ -2583,6 +2607,167 @@ class Migrator_indexeo extends Module
                     '" . pSQL($value['tracking_number']) . "',
                     '" . pSQL($value['date_add']) . "',
                     '" . pSQL($value['id_carrier']) . "'
+
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+
+
+
+
+
+    public function populateTax($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "tax WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."tax WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "tax (
+                    `id_tax`,
+                    `rate`,
+                    `active`,
+                    `deleted`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_tax']) . "',
+                    '" . pSQL($value['rate']) . "',
+                    '" . pSQL($value['active']) . "',
+                    '" . pSQL($value['deleted']) . "'
+
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateTaxLang($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "tax_lang WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."tax_lang WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "tax_lang (
+                    `id_tax`,
+                    `id_lang`,
+                    `name`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_tax']) . "',
+                    '" . pSQL($value['id_lang']) . "',
+                    '" . pSQL($value['name']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateTaxRule($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "tax_rule WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."tax_rule WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "tax_rule (
+                    `id_tax_rule`,
+                    `id_tax_rules_group`, 
+                    `id_country`,
+                    `id_state`,
+                    `zipcode_from`,
+                    `zipcode_to`,
+                    `id_tax`,
+                    `behavior`,
+                    `description`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_tax_rule']) . "',
+                    '" . pSQL($value['id_tax_rules_group']) . "', 
+                    '" . pSQL($value['id_country']) . "',
+                    '" . pSQL($value['id_state']) . "',
+                    '" . pSQL($value['zipcode_from']) . "',
+                    '" . pSQL($value['zipcode_to']) . "',
+                    '" . pSQL($value['id_tax']) . "',
+                    '" . pSQL($value['behavior']) . "',
+                    '" . pSQL($value['description']) . "'
+
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateOrderDetailTax($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_detail_tax WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_detail_tax WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_detail_tax (
+                    `id_order_detail`,
+                    `id_tax`, 
+                    `unit_amount`,
+                    `total_amount`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_detail']) . "',
+                    '" . pSQL($value['id_tax']) . "', 
+                    '" . pSQL($value['unit_amount']) . "',
+                    '" . pSQL($value['total_amount']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateOrderInvoiceTax($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_invoice_tax WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_invoice_tax WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_invoice_tax (
+                    `id_order_invoice`,
+                    `type`,
+                    `id_tax`,
+                    `amount`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_invoice']) . "',
+                    '" . pSQL($value['type']) . "',
+                    '" . pSQL($value['id_tax']) . "',
+                    '" . pSQL($value['amount']) . "'
 
                 )";
                 Db::getInstance()->execute($sql);
