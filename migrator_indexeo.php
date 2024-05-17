@@ -297,9 +297,9 @@ class Migrator_indexeo extends Module
 
 
 
-                //  ATTACHEMENT------------------------------------------------------------------
-                $this->populateAttachement($conn,$prefix);
-                $this->populateAttachementLang($conn,$prefix);
+                //  ATTACHMENT------------------------------------------------------------------
+                $this->populateAttachment($conn,$prefix);
+                $this->populateAttachmentLang($conn,$prefix);
 
 
             }
@@ -3264,22 +3264,22 @@ class Migrator_indexeo extends Module
 
 
 
-    public function populateAttachement($conn, $prefix){
+    public function populateAttachment($conn, $prefix){
         try {
-            $query = $conn->prepare("SELECT * FROM " .$prefix. "attachement WHERE 1");
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "attachment WHERE 1");
             $query->execute();
 
-            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."attachement WHERE 1;");
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."attachment WHERE 1;");
             foreach($query->fetchAll() as $key=>$value) {
-                $sql = "INSERT INTO " . _DB_PREFIX_ . "attachement (
-                    `id_attachement`, 
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "attachment (
+                    `id_attachment`, 
                     `file`,
                     `file_name`,
                     `file_size`,
                     `mime`
                 ) 
                 VALUES (
-                    '" . pSQL($value['id_attachement']) . "', 
+                    '" . pSQL($value['id_attachment']) . "', 
                     '" . pSQL($value['file']) . "',
                     '" . pSQL($value['file_name']) . "',
                     '" . pSQL($value['file_size']) . "',
@@ -3295,21 +3295,21 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-    public function populateAttachementLang($conn, $prefix){
+    public function populateAttachmentLang($conn, $prefix){
         try {
-            $query = $conn->prepare("SELECT * FROM " .$prefix. "attachement_lang WHERE 1");
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "attachment_lang WHERE 1");
             $query->execute();
 
-            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."attachement_lang WHERE 1;");
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."attachment_lang WHERE 1;");
             foreach($query->fetchAll() as $key=>$value) {
-                $sql = "INSERT INTO " . _DB_PREFIX_ . "attachement_lang (
-                    `id_attachement`, 
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "attachment_lang (
+                    `id_attachment`, 
                     `name`,
                     `description`,
                     `id_lang`
                 ) 
                 VALUES (
-                    '" . pSQL($value['id_attachement']) . "', 
+                    '" . pSQL($value['id_attachment']) . "', 
                     '" . pSQL($value['name']) . "',
                     '" . pSQL($value['description']) . "',
                     '" . pSQL($value['id_lang']) . "'
