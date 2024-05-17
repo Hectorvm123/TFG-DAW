@@ -175,12 +175,12 @@ class Migrator_indexeo extends Module
                 $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-                //  EMPLEADOS----------------------------------------------
+                //  EMPLOYEES----------------------------------------------
                 //$this->populateEmployee($conn,$prefix);
                 //$this->populateEmployeeShop($conn,$prefix);
 
 
-                //  CLIENTES-----------------------------------------------
+                //  CUSTOMERS-----------------------------------------------
                 $this->populateCustomer($conn,$prefix);
                 $this->populateCustomerGroup($conn,$prefix);
                 $this->populateCustomerMessage($conn,$prefix);
@@ -189,7 +189,7 @@ class Migrator_indexeo extends Module
                 $this->populateMailAlertCustomerOOS($conn,$prefix);
 
 
-                //  CATEGORIAS-----------------------------------------------
+                //  CATEGORIES-----------------------------------------------
                 $this->populateCategory($conn,$prefix);
                 $this->populateCategoryGroup($conn,$prefix);
                 $this->populateCategoryLang($conn,$prefix);
@@ -201,7 +201,7 @@ class Migrator_indexeo extends Module
                 $this->populateCategoryProduct($conn,$prefix);
 
 
-                // PRODUCTOS--------------------------------------------------
+                // PRODUCTS--------------------------------------------------
                 $this->populateProduct($conn,$prefix);
                 $this->populateProductLang($conn,$prefix);
                 $this->populateProductShop($conn,$prefix);
@@ -221,7 +221,7 @@ class Migrator_indexeo extends Module
                 $this->populateWareHouseProductLocation($conn,$prefix);
 
 
-                //  COMENTARIOS PRODUCTIOS (en la 1.6 no hay tablas para esto)
+                //  COMMENTS (these tables ain't on the 1.6)
 
                 // $this->populateProductComment($conn,$prefix);
                 // $this->populateProductCommentCriterion($conn,$prefix);
@@ -234,7 +234,7 @@ class Migrator_indexeo extends Module
 
 
 
-                //  GRUPOS---------------------------------------------------------
+                //  GROUP---------------------------------------------------------
                 $this->populateGroup($conn,$prefix);
                 $this->populateAttributeGroup($conn,$prefix);
                 $this->populateAttributeGroupLang($conn,$prefix);
@@ -252,14 +252,14 @@ class Migrator_indexeo extends Module
 
 
 
-                //  ATRIBUTOS---------------------------------------------------------
+                //  ATTRIBUTE---------------------------------------------------------
                 $this->populateAttribute($conn,$prefix);
                 $this->populateAttributeShop($conn,$prefix);
                 $this->populateAttributeLang($conn,$prefix);
                 $this->populateLayeredIndexableAttributeLangValue($conn,$prefix);
 
 
-                //  TRANSPORTISTAS---------------------------------------------------------
+                //  CARRIER---------------------------------------------------------
                 $this->populateCarrier($conn,$prefix);
                 $this->populateCarrierShop($conn,$prefix);
                 $this->populateCarrierLang($conn,$prefix);
@@ -314,6 +314,12 @@ class Migrator_indexeo extends Module
                 // WAREHOUSE---------------------------------------------------------------------
                 $this->populateWarehouse($conn,$prefix);
                 $this->populateWarehouseShop($conn,$prefix);
+
+
+                // CMS---------------------------------------------------------------------------
+                $this->populateCMS($conn,$prefix);
+                $this->populateCMSLang($conn,$prefix);
+                $this->populateCMSShop($conn,$prefix);
 
 
 
@@ -3449,7 +3455,7 @@ class Migrator_indexeo extends Module
                     `id_shop`,
                     `id_shop_group`,
                     `id_carrier`,
-                    `id_range_prices`,
+                    `id_range_price`,
                     `id_range_weight`,
                     `id_zone`,
                     `price`
@@ -3459,7 +3465,7 @@ class Migrator_indexeo extends Module
                     '" . pSQL($value['id_shop']) . "',
                     '" . pSQL($value['id_shop_group']) . "',
                     '" . pSQL($value['id_carrier']) . "',
-                    '" . pSQL($value['id_range_prices']) . "',
+                    '" . pSQL($value['id_range_price']) . "',
                     '" . pSQL($value['id_range_weight']) . "',
                     '" . pSQL($value['id_zone']) . "',
                     '" . pSQL($value['price']) . "'
@@ -3536,6 +3542,109 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
+
+
+
+
+
+    public function populateCMS($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "cms WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."cms WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "cms (
+                    `id_cms`, 
+                    `id_cms_category`,
+                    `position`,
+                    `active`,
+                    `indexation`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_cms']) . "', 
+                    '" . pSQL($value['id_cms_category']) . "',
+                    '" . pSQL($value['position']) . "',
+                    '" . pSQL($value['active']) . "',
+                    '" . pSQL($value['indexation']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+
+    public function populateCMSLang($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "cms_lang WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."cms_lang WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "cms_lang (
+                    `id_cms`, 
+                    `id_lang`,
+                    `meta_title`,
+                    `meta_description`,
+                    `meta_keywords`,
+                    `content`,
+                    `id_shop`,
+                    `link_rewrite`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_cms']) . "', 
+                    '" . pSQL($value['id_lang']) . "',
+                    '" . pSQL($value['meta_title']) . "',
+                    '" . pSQL($value['meta_description']) . "',
+                    '" . pSQL($value['meta_keywords']) . "',
+                    '" . pSQL($value['content']) . "',
+                    '" . pSQL($value['id_shop']) . "',
+                    '" . pSQL($value['link_rewrite']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateCMSShop($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "cms_shop WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."cms_shop WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "cms_shop (
+                    `id_cms`, 
+                    `id_shop`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_cms']) . "', 
+                    '" . pSQL($value['id_shop']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+
+
+
+
 
     public function testConnection(){
         $host = $this->form_values['OLD_DB_HOST'];
