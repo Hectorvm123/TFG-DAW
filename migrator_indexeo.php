@@ -307,6 +307,15 @@ class Migrator_indexeo extends Module
                 $this->populateAddressFormat($conn,$prefix);
 
 
+                //  DELIVERY---------------------------------------------------------------------
+                $this->populateDelivery($conn,$prefix);
+
+
+                // WAREHOUSE---------------------------------------------------------------------
+                $this->populateWarehouse($conn,$prefix);
+                $this->populateWarehouseShop($conn,$prefix);
+
+
 
             }
             catch(PDOException $exception) {
@@ -3425,6 +3434,108 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
+
+
+
+    public function populateDelivery($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "delivery WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."delivery WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "delivery (
+                    `id_delivery`, 
+                    `id_shop`,
+                    `id_shop_group`,
+                    `id_carrier`,
+                    `id_range_prices`,
+                    `id_range_weight`,
+                    `id_zone`,
+                    `price`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_delivery']) . "', 
+                    '" . pSQL($value['id_shop']) . "',
+                    '" . pSQL($value['id_shop_group']) . "',
+                    '" . pSQL($value['id_carrier']) . "',
+                    '" . pSQL($value['id_range_prices']) . "',
+                    '" . pSQL($value['id_range_weight']) . "',
+                    '" . pSQL($value['id_zone']) . "',
+                    '" . pSQL($value['price']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+
+    public function populateWarehouse($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "warehouse WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."warehouse WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "warehouse (
+                    `id_warehouse`, 
+                    `id_country`,
+                    `id_address`,
+                    `id_employee`,
+                    `reference`,
+                    `name`,
+                    `management_type`,
+                    `deleted`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_delivery']) . "', 
+                    '" . pSQL($value['id_country']) . "',
+                    '" . pSQL($value['id_address']) . "',
+                    '" . pSQL($value['id_employee']) . "',
+                    '" . pSQL($value['reference']) . "',
+                    '" . pSQL($value['name']) . "',
+                    '" . pSQL($value['management_type']) . "',
+                    '" . pSQL($value['deleted']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateWarehouseShop($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "warehouse_shop WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."warehouse_shop WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "warehouse_shop (
+                    `id_warehouse`, 
+                    `id_shop`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_delivery']) . "', 
+                    '" . pSQL($value['id_shop']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
 
     public function testConnection(){
         $host = $this->form_values['OLD_DB_HOST'];
