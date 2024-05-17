@@ -298,6 +298,8 @@ class Migrator_indexeo extends Module
 
 
                 //  ATTACHEMENT------------------------------------------------------------------
+                $this->populateAttachement($conn,$prefix);
+                $this->populateAttachementLang($conn,$prefix);
 
 
             }
@@ -3262,8 +3264,65 @@ class Migrator_indexeo extends Module
 
 
 
+    public function populateAttachement($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "attachement WHERE 1");
+            $query->execute();
 
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."attachement WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "attachement (
+                    `id_attachement`, 
+                    `file`,
+                    `file_name`,
+                    `file_size`,
+                    `mime`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_attachement']) . "', 
+                    '" . pSQL($value['file']) . "',
+                    '" . pSQL($value['file_name']) . "',
+                    '" . pSQL($value['file_size']) . "',
+                    '" . pSQL($value['mime']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
 
+    public function populateAttachementLang($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "attachement_lang WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."attachement_lang WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "attachement_lang (
+                    `id_attachement`, 
+                    `name`,
+                    `description`,
+                    `id_lang`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_attachement']) . "', 
+                    '" . pSQL($value['name']) . "',
+                    '" . pSQL($value['description']) . "',
+                    '" . pSQL($value['id_lang']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
 
 
 
