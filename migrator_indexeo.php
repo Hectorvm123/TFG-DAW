@@ -28,8 +28,13 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+require_once('/functions/employeePopulator.php');
+require_once('/functions/customerPopulator.php');
+
 class Migrator_indexeo extends Module
 {
+    
+
     protected $config_form = false;
 
     public function __construct()
@@ -172,21 +177,19 @@ class Migrator_indexeo extends Module
             $prefix = $this->form_values['OLD_DB_PREFIX'];
 
             try {
+
                 $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
                 //  EMPLOYEES----------------------------------------------
-                //$this->populateEmployee($conn,$prefix);
-                //$this->populateEmployeeShop($conn,$prefix);
+                $employeePopulator = new EmploeePopulator();
+                $employeePopulator->populateAllEmployees($conn, $prefix);
 
 
                 //  CUSTOMERS-----------------------------------------------
-                $this->populateCustomer($conn,$prefix);
-                $this->populateCustomerGroup($conn,$prefix);
-                $this->populateCustomerMessage($conn,$prefix);
-                $this->populateCustomerMessageSyncImap($conn,$prefix);
-                $this->populateCustomerThread($conn,$prefix);
-                $this->populateMailAlertCustomerOOS($conn,$prefix);
+                $customerPopulator = new CustomerPopulator();
+                $customerPopulator->populateAllCustomers($conn, $prefix);
+                
 
 
                 //  CATEGORIES-----------------------------------------------
@@ -373,330 +376,25 @@ class Migrator_indexeo extends Module
         $archivo = _PS_ROOT_DIR_.'/app/config/parameters.php';
         $newCookieKey = $this->form_values['OLD_COOKIE_KEY'];
 
-        $nueva_linea = "    'cookie_key' => '". $this->form_values['OLD_COOKIE_KEY'] ."',\n"; // Nueva línea que quieres agregar
+        $nueva_linea = "    'cookie_key' => '". $this->form_values['OLD_COOKIE_KEY'] ."',\n"; 
 
-        // Abrir el archivo en modo lectura y escritura
         if ($gestor = fopen($archivo, 'r+')) {
-            // Recorremos el archivo línea por línea
             while (!feof($gestor)) {
                 $linea = fgets($gestor);
-                // Buscar la línea que contiene 'cookie_key'
                 if (strpos($linea, 'cookie_key') !== false) {
-                    // Posicionarse al inicio de la línea
                     fseek($gestor, -strlen($linea), SEEK_CUR);
-                    // Escribir la nueva línea
                     fwrite($gestor, $nueva_linea);
                     break;
                 }
             }
-            fclose($gestor); // Cerrar el archivo
+            fclose($gestor);
             echo "La línea que contiene 'cookie_key' ha sido modificada.";
         } else {
             echo "No se pudo abrir el archivo.";
         }
     }
-    public function populateEmployee($conn, $prefix){
-        
-        $prefix = $this->form_values['OLD_DB_PREFIX'];
-        $query = $conn->prepare("SELECT * FROM " .$prefix. "employee WHERE 1");
-        $query->execute();
-    
-        // set the resulting array to associative
-        foreach($query->fetchAll() as $key=>$value) {
-            //por cada value hacer insert en ps_employee y ps_employee_shop
-            $sql = "INSERT INTO ". _DB_PREFIX_ ."employee (`id_employee`, `id_profile`, `id_lang`, `lastname`, `firstname`, `email`, `passwd`, `last_passwd_gen`, 
-                `stats_date_from`, `stats_date_to`, `stats_compare_from`, `stats_compare_to`, `stats_compare_option`, `preselect_date_range`, `bo_color`, `bo_theme`, `bo_css`, `default_tab`, `bo_width`, `bo_menu`, `active`, `optin`, `id_last_order`, `id_last_customer_message`, `id_last_customer`) 
-                VALUES ('" . pSQL($value['id_employee']) . "', '" . pSQL($value['id_profile']) . "', '" . pSQL($value['id_lang']) . "', '" . pSQL($value['lastname']) . "', '" . pSQL($value['firstname']) . "', '" . pSQL($value['email']) . "', '" . pSQL($value['passwd']) . "', '" . pSQL($value['last_passwd_gen']) . "', '" . pSQL($value['stats_date_from']) . "', '" . pSQL($value['stats_date_to']) . "', '" . pSQL($value['stats_compare_from']) . "', '" . pSQL($value['stats_compare_to']) . "', '" . pSQL($value['stats_compare_option']) . "', '" . pSQL($value['preselect_date_range']) . "', '" . pSQL($value['bo_color']) . "', '" . pSQL($value['bo_theme']) . "', '" . pSQL($value['bo_css']) . "', '" . pSQL($value['default_tab']) . "', '" . pSQL($value['bo_width']) . "', '" . pSQL($value['bo_menu']) . "', '" . pSQL($value['active']) . "', '" . pSQL($value['optin']) . "', '" . pSQL($value['id_last_order']) . "', '" . pSQL($value['id_last_customer_message']) . "', '" . pSQL($value['id_last_customer']) . "') 
-                ON DUPLICATE KEY UPDATE 
-                id_profile = VALUES(id_profile), 
-                id_lang = VALUES(id_lang), 
-                lastname = VALUES(lastname), 
-                firstname = VALUES(firstname), 
-                email = VALUES(email), 
-                passwd = VALUES(passwd), 
-                last_passwd_gen = VALUES(last_passwd_gen), 
-                stats_date_from = VALUES(stats_date_from), 
-                stats_date_to = VALUES(stats_date_to), 
-                stats_compare_from = VALUES(stats_compare_from), 
-                stats_compare_to = VALUES(stats_compare_to), 
-                stats_compare_option = VALUES(stats_compare_option), 
-                preselect_date_range = VALUES(preselect_date_range), 
-                bo_color = VALUES(bo_color), 
-                bo_theme = VALUES(bo_theme), 
-                bo_css = VALUES(bo_css), 
-                default_tab = VALUES(default_tab), 
-                bo_width = VALUES(bo_width), 
-                bo_menu = VALUES(bo_menu), 
-                active = VALUES(active), 
-                optin = VALUES(optin), 
-                id_last_order = VALUES(id_last_order), 
-                id_last_customer_message = VALUES(id_last_customer_message), 
-                id_last_customer = VALUES(id_last_customer)";
-    
-            Db::getInstance()->execute($sql);
-        }
-    }
-    
-    public function populateEmployeeShop($conn, $prefix){
-        
-    
-        try {
-            $query = $conn->prepare("SELECT * FROM " .$prefix. "employee_shop WHERE 1");
-            $query->execute();
-
-            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."employee_shop WHERE 1;");
-            foreach($query->fetchAll() as $key=>$value) {
-                $sql = "INSERT INTO ". _DB_PREFIX_ ."employee_shop (`id_employee`, `id_shop`) VALUES ('" . pSQL($value['id_employee']) . "', '" . pSQL($value['id_shop']) . "')";
-                Db::getInstance()->execute($sql);
-            }
-        }
-        catch(PDOException $exception) {
-            echo "Error: " . $exception->getMessage();
-        }
-        // Cerrar conexion
-        $conn = null;
-    }
-
-    public function populateCustomer($conn, $prefix){
-        
-        $prefix = $this->form_values['OLD_DB_PREFIX'];
-        $query = $conn->prepare("SELECT * FROM " .$prefix. "customer WHERE 1");
-        $query->execute();
-    
-        // set the resulting array to associative
-        foreach($query->fetchAll() as $key=>$value) {
-            $sql = "INSERT INTO ". _DB_PREFIX_ ."customer (`id_customer`, `id_shop_group`,  `id_shop`, `id_gender`, `id_default_group`, `id_lang`, `id_risk` , `company`, `siret`, 
-                `ape`, `firstname`, `lastname`, `email`, `passwd`, `last_passwd_gen`, `birthday`, `newsletter`, `ip_registration_newsletter`, `newsletter_date_add`, `optin`,
-                `website`, `outstanding_allow_amount`, `show_public_prices`, `max_payment_days`, `secure_key`, `note`, `active`, `is_guest`, `deleted`, `date_add`, 
-                `date_upd`, `reset_password_token`, `reset_password_validity`) 
-                VALUES ('"
-                . pSQL($value['id_customer']) . "', '" 
-                . pSQL($value['id_shop_group']) . "', '" 
-                . pSQL($value['id_shop']) . "', '" 
-                . pSQL($value['id_gender']) . "', '" 
-                . pSQL($value['id_default_group']) . "', '" 
-                . pSQL($value['id_lang']) . "', '" 
-                . pSQL($value['id_risk']) . "', '" 
-                . pSQL($value['company']) . "', '" 
-                . pSQL($value['siret']) . "', '" 
-                . pSQL($value['ape']) . "', '" 
-                . pSQL($value['firstname']) . "', '" 
-                . pSQL($value['lastname']) . "', '" 
-                . pSQL($value['email']) . "', '" 
-                . pSQL($value['passwd']) . "', '" 
-                . pSQL($value['last_passwd_gen']) . "', '" 
-                . pSQL($value['birthday']) . "', '" 
-                . pSQL($value['newsletter']) . "', '" 
-                . pSQL($value['ip_registration_newsletter']) . "', '" 
-                . pSQL($value['newsletter_date_add']) . "', '" 
-                . pSQL($value['optin']) . "', '" 
-                . pSQL($value['website']) . "', '" 
-                . pSQL($value['outstanding_allow_amount']) . "', '" 
-                . pSQL($value['show_public_prices']) . "', '" 
-                . pSQL($value['max_payment_days']) . "', '" 
-                . pSQL($value['secure_key']) . "', '" 
-                . pSQL($value['note']) . "', '" 
-                . pSQL($value['active']) . "', '" 
-                . pSQL($value['is_guest']) . "', '" 
-                . pSQL($value['deleted']) . "', '" 
-                . pSQL($value['date_add']) . "', '" 
-                . pSQL($value['date_upd']) . "', NULL, NULL)  
-                ON DUPLICATE KEY UPDATE 
-                id_shop = VALUES(id_shop), 
-                id_gender = VALUES(id_gender), 
-                id_default_group = VALUES(id_default_group), 
-                id_lang = VALUES(id_lang), 
-                id_risk = VALUES(id_risk), 
-                company = VALUES(company), 
-                siret = VALUES(siret), 
-                ape = VALUES(ape), 
-                firstname = VALUES(firstname), 
-                lastname = VALUES(lastname), 
-                email = VALUES(email), 
-                passwd = VALUES(passwd), 
-                last_passwd_gen = VALUES(last_passwd_gen), 
-                birthday = VALUES(birthday), 
-                newsletter = VALUES(newsletter), 
-                ip_registration_newsletter = VALUES(ip_registration_newsletter), 
-                newsletter_date_add = VALUES(newsletter_date_add), 
-                optin = VALUES(optin), 
-                website = VALUES(website), 
-                outstanding_allow_amount = VALUES(outstanding_allow_amount), 
-                show_public_prices = VALUES(show_public_prices), 
-                max_payment_days = VALUES(max_payment_days), 
-                secure_key = VALUES(secure_key), 
-                note = VALUES(note), 
-                active = VALUES(active), 
-                is_guest = VALUES(is_guest), 
-                deleted = VALUES(deleted), 
-                date_add = VALUES(date_add), 
-                date_upd = VALUES(date_upd), 
-                reset_password_token = NULL,
-                reset_password_validity = NULL";
-    
-            Db::getInstance()->execute($sql);
-        }
-    }
-    
-    public function populateCustomerGroup($conn, $prefix){
-        try {
-            $query = $conn->prepare("SELECT * FROM " .$prefix. "customer_group WHERE 1");
-            $query->execute();
-
-            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."customer_group WHERE 1;");
-            foreach($query->fetchAll() as $key=>$value) {
-                $sql = "INSERT INTO ". _DB_PREFIX_ ."customer_group (`id_customer`, `id_group`) VALUES ('" . pSQL($value['id_customer']) . "', '" . pSQL($value['id_group']) . "')";
-                Db::getInstance()->execute($sql);
-            }
-        }
-        catch(PDOException $exception) {
-            echo "Error: " . $exception->getMessage();
-        }
-        // Cerrar conexion
-        $conn = null;
-    }
-
-    public function populateCustomerMessage($conn, $prefix){
-        try {
-            $query = $conn->prepare("SELECT * FROM " .$prefix. "customer_message WHERE 1");
-            $query->execute();
-
-            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."customer_message WHERE 1;");
-            foreach($query->fetchAll() as $key=>$value) {
-                $sql = "INSERT INTO " . _DB_PREFIX_ . "customer_message (
-                    `id_customer_message`, 
-                    `id_customer_thread`,
-                    `id_employee`,
-                    `message`,
-                    `file_name`,
-                    `ip_address`,
-                    `user_agent`,
-                    `date_add`,
-                    `date_upd`,
-                    `private`,
-                    `read`
-                ) 
-                VALUES (
-                    '" . pSQL($value['id_customer_message']) . "', 
-                    '" . pSQL($value['id_customer_thread']) . "',
-                    '" . pSQL($value['id_employee']) . "',
-                    '" . pSQL($value['message']) . "',
-                    '" . pSQL($value['file_name']) . "',
-                    '" . pSQL($value['ip_address']) . "',
-                    '" . pSQL($value['user_agent']) . "',
-                    '" . pSQL($value['date_add']) . "',
-                    '" . pSQL($value['date_upd']) . "',
-                    '" . pSQL($value['private']) . "',
-                    '" . pSQL($value['read']) . "'
-                )";
-                Db::getInstance()->execute($sql);
-            }
-        }
-        catch(PDOException $exception) {
-            echo "Error: " . $exception->getMessage();
-        }
-        // Cerrar conexion
-        $conn = null;
-    }
-
-    public function populateCustomerMessageSyncImap($conn, $prefix){
-        try {
-            $query = $conn->prepare("SELECT * FROM " .$prefix. "customer_message_sync_imap WHERE 1");
-            $query->execute();
-
-            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."customer_message_sync_imap WHERE 1;");
-            foreach($query->fetchAll() as $key=>$value) {
-                $sql = "INSERT INTO " . _DB_PREFIX_ . "customer_message_sync_imap (`md5_header`) VALUES ('" . pSQL($value['md5_header']) . "',  )"; 
-                Db::getInstance()->execute($sql);
-            }
-        }
-        catch(PDOException $exception) {
-            echo "Error: " . $exception->getMessage();
-        }
-        // Cerrar conexion
-        $conn = null;
-    }
-
-    public function populateCustomerThread($conn, $prefix){
-        try {
-            $query = $conn->prepare("SELECT * FROM " .$prefix. "customer_thread WHERE 1");
-            $query->execute();
-
-            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."customer_thread WHERE 1;");
-            foreach($query->fetchAll() as $key=>$value) {
-                $sql = "INSERT INTO " . _DB_PREFIX_ . "customer_thread (
-                    `id_customer_thread`,
-                    `id_shop`,
-                    `id_lang`,
-                    `id_contact`,
-                    `id_customer`,
-                    `id_order`,
-                    `id_product`,
-                    `status`,
-                    `email`,
-                    `token`,
-                    `date_add`,
-                    `date_upd`
-
-                ) 
-                VALUES (
-                    '" . pSQL($value['id_customer_thread']) . "',
-                    '" . pSQL($value['id_shop']) . "',
-                    '" . pSQL($value['id_lang']) . "',
-                    '" . pSQL($value['id_contact']) . "',
-                    '" . pSQL($value['id_customer']) . "',
-                    '" . pSQL($value['id_order']) . "',
-                    '" . pSQL($value['id_product']) . "',
-                    '" . pSQL($value['status']) . "',
-                    '" . pSQL($value['email']) . "',
-                    '" . pSQL($value['token']) . "',
-                    '" . pSQL($value['date_add']) . "',
-                    '" . pSQL($value['date_upd']) . "'
-
-                )";
-                Db::getInstance()->execute($sql);
-            }
-        }
-        catch(PDOException $exception) {
-            echo "Error: " . $exception->getMessage();
-        }
-        // Cerrar conexion
-        $conn = null;
-    }
 
     
-    public function populateMailAlertCustomerOOS($conn, $prefix){
-        try {
-            $query = $conn->prepare("SELECT * FROM " .$prefix. "mailalert_customer_oos WHERE 1");
-            $query->execute();
-
-            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."mailalert_customer_oos WHERE 1;");
-            foreach($query->fetchAll() as $key=>$value) {
-                $sql = "INSERT INTO " . _DB_PREFIX_ . "mailalert_customer_oos (
-                    `id_customer`,
-                    `customer_mail`,
-                    `id_product`,
-                    `id_product_attribute`,
-                    `id_shop`,
-                    `id_lang`
-                ) 
-                VALUES (
-                    '" . pSQL($value['id_customer']) . "',
-                    '" . pSQL($value['customer_mail']) . "',
-                    '" . pSQL($value['id_product']) . "',
-                    '" . pSQL($value['id_product_attribute']) . "',
-                    '" . pSQL($value['id_shop']) . "',
-                    '" . pSQL($value['id_lang']) . "'
-                )";
-                Db::getInstance()->execute($sql);
-            }
-        }
-        catch(PDOException $exception) {
-            echo "Error: " . $exception->getMessage();
-        }
-        // Cerrar conexion
-        $conn = null;
-    }
     
     public function populateCategory($conn, $prefix){
         try {
