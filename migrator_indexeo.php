@@ -328,6 +328,9 @@ class Migrator_indexeo extends Module
                 $this->populateImageShop($conn,$prefix);
                 $this->populateImageType($conn,$prefix);
 
+                // ORDER--------------------------------------------------------------------------
+                $this->populateOrders($conn,$prefix);
+
 
 
             }
@@ -1950,9 +1953,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
-
-
     public function populateAttributeGroup($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "attribute_group WHERE 1");
@@ -2356,8 +2356,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
-
     public function populateAttribute($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "attribute WHERE 1");
@@ -2480,10 +2478,6 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
-
-
-
-
 
 
     public function populateCarrier($conn, $prefix){
@@ -2630,9 +2624,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
-
-
     public function populateOderCarrier($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "order_carrier WHERE 1");
@@ -2672,11 +2663,6 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
-
-
-
-
-
 
     public function populateTax($conn, $prefix){
         try {
@@ -3448,8 +3434,6 @@ class Migrator_indexeo extends Module
     }
 
 
-
-
     public function populateDelivery($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "delivery WHERE 1");
@@ -3549,9 +3533,6 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
-
-
-
 
 
     public function populateCMS($conn, $prefix){
@@ -3776,6 +3757,127 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
+
+
+
+
+
+
+
+    public function populateOrders($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "orders WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."orders WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "orders (
+                    `id_order`, 
+                    `reference`,
+                    `id_shop_group`,
+                    `id_shop`,
+                    `id_carrier`,
+                    `id_lang`,
+                    `id_customer`,
+                    `id_cart`,
+                    `id_currency`,
+                    `id_address_invoice`,
+                    `id_address_delivery`,
+                    `current_state`,
+                    `secure_key`,
+                    `payment`,
+                    `conversion_rate`,
+                    `module`,
+                    `recyclable`,
+                    `gift`,
+                    `gift_message`,
+                    `mobile_theme`,
+                    `total_discounts`,
+                    `total_discounts_tax_incl`,
+                    `total_discounts_tax_excl`,
+                    `total_paid`,
+                    `total_paid_tax_incl`,
+                    `total_paid_tax_excl`,
+                    `total_paid_real`,
+                    `total_products`,
+                    `total_products_wt`,
+                    `total_shipping`,
+                    `total_shipping_tax_incl`,
+                    `total_shipping_tax_excl`,
+                    `carrier_tax_rate`,
+
+
+                    `total_wrapping`,
+                    `total_wrapping_tax_incl`,
+                    `total_wrapping_tax_excl`,
+                    `invoice_number`,
+                    `delivery_number`,
+                    `invoice_date`,
+                    `delivery_date`,
+                    `valid`,
+                    `date_add`,
+                    `date_upd`,
+                    `round_node`,
+                    `round_type`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order']) . "', 
+                    '" . pSQL($value['reference']) . "',
+                    '" . pSQL($value['id_shop_group']) . "',
+                    '" . pSQL($value['id_shop']) . "',
+                    '" . pSQL($value['id_carrier']) . "',
+                    '" . pSQL($value['id_lang']) . "',
+                    '" . pSQL($value['id_customer']) . "',
+                    '" . pSQL($value['id_cart']) . "',
+                    '" . pSQL($value['id_currency']) . "',
+                    '" . pSQL($value['id_address_invoice']) . "',
+                    '" . pSQL($value['id_address_delivery']) . "',
+                    '" . pSQL($value['current_state']) . "',
+                    '" . pSQL($value['secure_key']) . "',
+                    '" . pSQL($value['payment']) . "',
+                    '" . pSQL($value['conversion_rate']) . "',
+                    '" . pSQL($value['module']) . "',
+                    '" . pSQL($value['recyclable']) . "',
+                    '" . pSQL($value['gift']) . "',
+                    '" . pSQL($value['gift_message']) . "',
+                    '" . pSQL($value['mobile_theme']) . "',
+                    '" . pSQL($value['total_discounts']) . "',
+                    '" . pSQL($value['total_discounts_tax_incl']) . "',
+                    '" . pSQL($value['total_discounts_tax_excl']) . "',
+                    '" . pSQL($value['total_paid']) . "',
+                    '" . pSQL($value['total_paid_tax_incl']) . "',
+                    '" . pSQL($value['total_paid_tax_excl']) . "',
+                    '" . pSQL($value['total_paid_real']) . "',
+                    '" . pSQL($value['total_products']) . "',
+                    '" . pSQL($value['total_products_wt']) . "',
+                    '" . pSQL($value['total_shipping']) . "',
+                    '" . pSQL($value['total_shipping_tax_incl']) . "',
+                    '" . pSQL($value['total_shipping_tax_excl']) . "',
+                    '" . pSQL($value['carrier_tax_rate']) . "',
+                    '" . pSQL($value['total_wrapping']) . "',
+                    '" . pSQL($value['total_wrapping_tax_incl']) . "',
+                    '" . pSQL($value['total_wrapping_tax_excl']) . "',
+                    '" . pSQL($value['invoice_number']) . "',
+                    '" . pSQL($value['delivery_number']) . "',
+                    '" . pSQL($value['invoice_date']) . "',
+                    '" . pSQL($value['delivery_date']) . "',
+                    '" . pSQL($value['valid']) . "',
+                    '" . pSQL($value['date_add']) . "',
+                    '" . pSQL($value['date_upd']) . "',
+                    0,
+                    0
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+
 
 
 
