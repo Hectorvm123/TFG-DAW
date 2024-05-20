@@ -330,6 +330,8 @@ class Migrator_indexeo extends Module
 
                 // ORDER--------------------------------------------------------------------------
                 $this->populateOrders($conn,$prefix);
+                $this->populateOrderDetail($conn,$prefix);
+                $this->populateOrderInvoice($conn,$prefix);
 
 
 
@@ -3805,8 +3807,6 @@ class Migrator_indexeo extends Module
                     `total_shipping_tax_incl`,
                     `total_shipping_tax_excl`,
                     `carrier_tax_rate`,
-
-
                     `total_wrapping`,
                     `total_wrapping_tax_incl`,
                     `total_wrapping_tax_excl`,
@@ -3817,7 +3817,7 @@ class Migrator_indexeo extends Module
                     `valid`,
                     `date_add`,
                     `date_upd`,
-                    `round_node`,
+                    `round_mode`,
                     `round_type`
                 ) 
                 VALUES (
@@ -3880,6 +3880,211 @@ class Migrator_indexeo extends Module
 
 
 
+    
+
+    public function populateOrderDetail($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_detail WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_detail WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_detail (
+                    `id_order`, 
+                    `id_order_detail`,
+                    `id_order_invoice`,
+                    `id_warehouse`,
+                    `id_shop`,
+                    `product_id`,
+                    `product_attribute_id`,
+                    `product_name`,
+                    `product_quantity`,
+                    `product_quantity_in_stock`,
+                    `product_quantity_refunded`,
+                    `product_quantity_return`,
+                    `product_price`,
+                    `product_quantity_reinjected`,
+                    `reduction_percent`,
+                    `reduction_amount`,
+                    `reduction_amount_tax_incl`,
+                    `reduction_amount_tax_excl`,
+                    `group_reduction`,
+                    `product_quantity_discount`,
+                    `product_ean13`,
+                    `product_upc`,
+                    `product_isbn`,
+                    `product_mpn`,
+                    `product_reference`,
+                    `product_weight`,
+                    `tax_computation_method`,
+                    `tax_name`,
+                    `tax_rate`,
+                    `ecotax`,
+                    `ecotax_tax_rate`,
+                    `discount_quantity_applied`,
+                    `download_hash`,
+                    `download_nb`,
+                    `download_deadline`,
+                    `total_price_tax_incl`,
+                    `total_price_tax_excl`,
+                    `unit_price_tax_incl`,
+                    `unit_price_tax_excl`,
+                    `total_shipping_price_tax_incl`,
+                    `total_shipping_price_tax_excl`,
+                    `purchase_supplier_price`,
+                    `original_product_price`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order']) . "', 
+                    '" . pSQL($value['id_order_detail']) . "',
+                    '" . pSQL($value['id_order_invoice']) . "',
+                    '" . pSQL($value['id_warehouse']) . "',
+                    '" . pSQL($value['id_shop']) . "',
+                    '" . pSQL($value['product_id']) . "',
+                    '" . pSQL($value['product_attribute_id']) . "',
+                    '" . pSQL($value['product_name']) . "',
+                    '" . pSQL($value['product_quantity']) . "',
+                    '" . pSQL($value['product_quantity_in_stock']) . "',
+                    '" . pSQL($value['product_quantity_refunded']) . "',
+                    '" . pSQL($value['product_quantity_return']) . "',
+                    '" . pSQL($value['product_price']) . "',
+                    '" . pSQL($value['product_quantity_reinjected']) . "',
+                    '" . pSQL($value['reduction_percent']) . "',
+                    '" . pSQL($value['reduction_amount']) . "',
+                    '" . pSQL($value['reduction_amount_tax_incl']) . "',
+                    '" . pSQL($value['reduction_amount_tax_excl']) . "',
+                    '" . pSQL($value['group_reduction']) . "',
+                    '" . pSQL($value['product_quantity_discount']) . "',
+                    '" . pSQL($value['product_ean13']) . "',
+                    '" . pSQL($value['product_upc']) . "',
+                    0,
+                    0,
+                    '" . pSQL($value['product_reference']) . "',
+                    '" . pSQL($value['product_weight']) . "',
+                    '" . pSQL($value['tax_computation_method']) . "',
+                    '" . pSQL($value['tax_name']) . "',
+                    '" . pSQL($value['tax_rate']) . "',
+                    '" . pSQL($value['ecotax']) . "',
+                    '" . pSQL($value['ecotax_tax_rate']) . "',
+                    '" . pSQL($value['discount_quantity_applied']) . "',
+                    '" . pSQL($value['download_hash']) . "',
+                    '" . pSQL($value['download_nb']) . "',
+                    '" . pSQL($value['download_deadline']) . "',
+                    '" . pSQL($value['total_price_tax_incl']) . "',
+                    '" . pSQL($value['total_price_tax_excl']) . "',
+                    '" . pSQL($value['unit_price_tax_incl']) . "',
+                    '" . pSQL($value['unit_price_tax_excl']) . "',
+                    '" . pSQL($value['total_shipping_price_tax_incl']) . "',
+                    '" . pSQL($value['total_shipping_price_tax_excl']) . "',
+                    '" . pSQL($value['purchase_supplier_price']) . "',
+                    '" . pSQL($value['original_product_price']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+
+
+
+
+
+    public function populateOrderHistory($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_history WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_history WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_history (
+                    `id_order_history`, 
+                    `id_employee`,
+                    `id_order`,
+                    `id_order_state`,
+                    `date_add`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_history']) . "', 
+                    '" . pSQL($value['id_employee']) . "',
+                    '" . pSQL($value['id_order']) . "',
+                    '" . pSQL($value['id_order_state']) . "',
+                    '" . pSQL($value['date_add']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+
+
+
+
+    public function populateOrderInvoice($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_invoice WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_invoice WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_invoice (
+                    `id_order`, 
+                    `id_order_invoice`,
+                    `number`,
+                    `delivery_number`,
+                    `delivery_date`,
+                    `total_discount_tax_incl`,
+                    `total_discount_tax_excl`,
+                    `total_paid_tax_incl`,
+                    `total_paid_tax_excl`,
+                    `total_products`,
+                    `total_products_wt`,
+                    `total_shipping_tax_incl`,
+                    `total_shipping_tax_excl`,
+                    `total_wrapping_tax_incl`,
+                    `total_wrapping_tax_excl`,
+                    `shipping_tax_computation_method`,
+                    `note`,
+                    `date_add`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order']) . "', 
+                    '" . pSQL($value['id_order_invoice']) . "',
+                    '" . pSQL($value['number']) . "',
+                    '" . pSQL($value['delivery_number']) . "',
+                    '" . pSQL($value['delivery_date']) . "',
+                    '" . pSQL($value['total_discount_tax_incl']) . "',
+                    '" . pSQL($value['total_discount_tax_excl']) . "',
+                    '" . pSQL($value['total_paid_tax_incl']) . "',
+                    '" . pSQL($value['total_paid_tax_excl']) . "',
+                    '" . pSQL($value['total_products']) . "',
+                    '" . pSQL($value['total_products_wt']) . "',
+                    '" . pSQL($value['total_shipping_tax_incl']) . "',
+                    '" . pSQL($value['total_shipping_tax_excl']) . "',
+                    '" . pSQL($value['total_wrapping_tax_incl']) . "',
+                    '" . pSQL($value['total_wrapping_tax_excl']) . "',
+                    '" . pSQL($value['shipping_tax_computation_method']) . "',
+                    '" . pSQL($value['note']) . "',
+                    '" . pSQL($value['date_add']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
 
 
     public function testConnection(){
