@@ -335,6 +335,16 @@ class Migrator_indexeo extends Module
                 $this->populateOrderMessageLang($conn,$prefix);
                 $this->populateOrderMessage($conn,$prefix);
                 $this->populateOrderInvoicePayment($conn,$prefix);
+                $this->populateOrderPayment($conn,$prefix);
+                $this->populateOrderReturn($conn,$prefix);
+                $this->populateOrderReturnLang($conn,$prefix);
+                $this->populateOrderSlip($conn,$prefix);
+                $this->populateOrderSlipDetail($conn,$prefix);
+                $this->populateOrderState($conn,$prefix);
+                $this->populateOrderStateLang($conn,$prefix);
+                $this->populateOrderReturnState($conn,$prefix);
+                $this->populateOrderReturnDetail($conn,$prefix);
+                $this->populateOrderHistory($conn,$prefix);
 
 
 
@@ -4130,6 +4140,316 @@ class Migrator_indexeo extends Module
     }
 
 
+    public function populateOrderPayment($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_payment WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_payment WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_payment (
+                    `id_order_payment`,
+                    `order_reference`,
+                    `id_currency`,
+                    `amount`,
+                    `payment_method`,
+                    `conversion_rate`,
+                    `transaction_id`,
+                    `card_number`,
+                    `card_brand`,
+                    `card_expiration`,
+                    `card_holder`,
+                    `date_add`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_payment']) . "',
+                    '" . pSQL($value['order_reference']) . "',
+                    '" . pSQL($value['id_currency']) . "',
+                    '" . pSQL($value['amount']) . "',
+                    '" . pSQL($value['payment_method']) . "',
+                    '" . pSQL($value['conversion_rate']) . "',
+                    '" . pSQL($value['transaction_id']) . "',
+                    '" . pSQL($value['card_number']) . "',
+                    '" . pSQL($value['card_brand']) . "',
+                    '" . pSQL($value['card_expiration']) . "',
+                    '" . pSQL($value['card_holder']) . "',
+                    '" . pSQL($value['date_add']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateOrderReturn($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_return WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_return WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_return (
+                    `id_order_return`, 
+                    `id_customer`,
+                    `id_order`,
+                    `state`,
+                    `question`,
+                    `date_add`,
+                    `date_upd`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_return']) . "', 
+                    '" . pSQL($value['id_customer']) . "',
+                    '" . pSQL($value['id_order']) . "',
+                    '" . pSQL($value['state']) . "',
+                    '" . pSQL($value['question']) . "',
+                    '" . pSQL($value['date_add']) . "',
+                    '" . pSQL($value['date_upd']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateOrderReturnDetail($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_return_detail WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_return_detail WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_return_detail (
+                    `id_order_return`, 
+                    `id_order_detail`,
+                    `id_customization`,
+                    `product_quantity`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_return']) . "', 
+                    '" . pSQL($value['id_order_detail']) . "',
+                    '" . pSQL($value['id_customization']) . "',
+                    '" . pSQL($value['product_quantity']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateOrderReturnState($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_return_state WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_return_state WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_return_state (
+                    `id_order_return_state`, 
+                    `color`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_return_state']) . "', 
+                    '" . pSQL($value['color']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateOrderReturnLang($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_return_state_lang WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_return_state_lang WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_return_state_lang (
+                    `id_order_return_state`, 
+                    `name`,
+                    `id_lang`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_return_state']) . "', 
+                    '" . pSQL($value['name']) . "',
+                    '" . pSQL($value['id_lang']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateOrderSlip($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_slip WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_slip WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_slip (
+                    `id_order_slip`, 
+                    `conversion_rate`,
+                    `id_customer`,
+                    `id_order`,
+                    `shipping_cost`,
+                    `amount`,
+                    `shipping_cost_amount`,
+                    `partial`,
+                    `date_add`,
+                    `date_upd`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_slip']) . "', 
+                    '" . pSQL($value['conversion_rate']) . "',
+                    '" . pSQL($value['id_customer']) . "',
+                    '" . pSQL($value['id_order']) . "',
+                    '" . pSQL($value['shipping_cost']) . "',
+                    '" . pSQL($value['amount']) . "',
+                    '" . pSQL($value['shipping_cost_amount']) . "',
+                    '" . pSQL($value['partial']) . "',
+                    '" . pSQL($value['date_add']) . "',
+                    '" . pSQL($value['date_upd']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateOrderSlipDetail($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_slip_detail WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_slip_detail WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_slip_detail (
+                    `id_order_slip`, 
+                    `id_order_detail`,
+                    `product_quantity`,
+                    `amount_tax_incl`,
+                    `amount_tax_excl`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_slip']) . "', 
+                    '" . pSQL($value['id_order_detail']) . "',
+                    '" . pSQL($value['product_quantity']) . "',
+                    '" . pSQL($value['amount_tax_incl']) . "',
+                    '" . pSQL($value['amount_tax_excl']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateOrderState($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_state WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_state WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_state (
+                    `id_order_state`, 
+                    `invoice`,
+                    `send_email`,
+                    `module_name`,
+                    `color`,
+                    `unremovable`,
+                    `hidden`,
+                    `logable`,
+                    `delivery`,
+                    `shipped`,
+                    `paid`,
+                    `pdf_invoice`,
+                    `pdf_delivery`,
+                    `deleted`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_state']) . "', 
+                    '" . pSQL($value['invoice']) . "',
+                    '" . pSQL($value['send_email']) . "',
+                    '" . pSQL($value['module_name']) . "',
+                    '" . pSQL($value['color']) . "',
+                    '" . pSQL($value['unremovable']) . "',
+                    '" . pSQL($value['hidden']) . "',
+                    '" . pSQL($value['logable']) . "',
+                    '" . pSQL($value['delivery']) . "',
+                    '" . pSQL($value['shipped']) . "',
+                    '" . pSQL($value['paid']) . "',
+                    '" . pSQL($value['pdf_invoice']) . "',
+                    '" . pSQL($value['pdf_delivery']) . "',
+                    '" . pSQL($value['deleted']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateOrderStateLang($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_state_lang WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_state_lang WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_state_lang (
+                    `id_order_state`, 
+                    `id_lang`,
+                    `name`,
+                    `template`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_state']) . "', 
+                    '" . pSQL($value['id_lang']) . "',
+                    '" . pSQL($value['name']) . "',
+                    '" . pSQL($value['template']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
 
     public function testConnection(){
         $host = $this->form_values['OLD_DB_HOST'];
