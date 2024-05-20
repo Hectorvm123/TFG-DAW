@@ -332,6 +332,9 @@ class Migrator_indexeo extends Module
                 $this->populateOrders($conn,$prefix);
                 $this->populateOrderDetail($conn,$prefix);
                 $this->populateOrderInvoice($conn,$prefix);
+                $this->populateOrderMessageLang($conn,$prefix);
+                $this->populateOrderMessage($conn,$prefix);
+                $this->populateOrderInvoicePayment($conn,$prefix);
 
 
 
@@ -443,8 +446,6 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
-
-
 
     public function populateCustomer($conn, $prefix){
         
@@ -980,7 +981,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
     public function popullateLayeredCategory($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "layered_category WHERE 1");
@@ -1025,8 +1025,6 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
-
-   
 
     public function populateProduct($conn, $prefix){
         try {
@@ -2568,8 +2566,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
-
     public function populateCarrierLang($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "carrier_lang WHERE 1");
@@ -2822,8 +2818,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
-
     public function populateManufacturer($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "manufacturer WHERE 1");
@@ -2917,8 +2911,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
-
     public function populateSupplier($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "supplier WHERE 1");
@@ -3009,7 +3001,6 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
-
 
 
     public function populateSupplyOrder($conn, $prefix){
@@ -3278,8 +3269,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
-
     public function populateAttachment($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "attachment WHERE 1");
@@ -3339,7 +3328,6 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
-
 
     public function populateAddress($conn, $prefix){
         try {
@@ -3434,7 +3422,6 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
-
 
     public function populateDelivery($conn, $prefix){
         try {
@@ -3536,7 +3523,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
     public function populateCMS($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "cms WHERE 1");
@@ -3631,9 +3617,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
-
-
     public function populateImage($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "image WHERE 1");
@@ -3662,7 +3645,6 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
-
 
     public function populateImageLang($conn, $prefix){
         try {
@@ -3720,7 +3702,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
     public function populateImageType($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "image_type WHERE 1");
@@ -3759,12 +3740,6 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
-
-
-
-
-
-
 
     public function populateOrders($conn, $prefix){
         try {
@@ -3877,11 +3852,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
-
-
-    
-
     public function populateOrderDetail($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "order_detail WHERE 1");
@@ -3989,11 +3959,6 @@ class Migrator_indexeo extends Module
         $conn = null;
     }
 
-
-
-
-
-
     public function populateOrderHistory($conn, $prefix){
         try {
             $query = $conn->prepare("SELECT * FROM " .$prefix. "order_history WHERE 1");
@@ -4024,10 +3989,6 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
-
-
-
-
 
     public function populateOrderInvoice($conn, $prefix){
         try {
@@ -4085,6 +4046,89 @@ class Migrator_indexeo extends Module
         // Cerrar conexion
         $conn = null;
     }
+
+    public function populateOrderInvoicePayment($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_invoice_payment WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_invoice_payment WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_invoice_payment (
+                    `id_order`, 
+                    `id_order_invoice`,
+                    `id_order_payment`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order']) . "', 
+                    '" . pSQL($value['id_order_invoice']) . "',
+                    '" . pSQL($value['id_order_payment']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+    public function populateOrderMessage($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_message WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_message WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_message (
+                    `id_order_message`, 
+                    `date_add`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_message']) . "', 
+                    '" . pSQL($value['date_add']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
+
+    public function populateOrderMessageLang($conn, $prefix){
+        try {
+            $query = $conn->prepare("SELECT * FROM " .$prefix. "order_message_lang WHERE 1");
+            $query->execute();
+
+            Db::getInstance()->execute("DELETE FROM ". _DB_PREFIX_ ."order_message_lang WHERE 1;");
+            foreach($query->fetchAll() as $key=>$value) {
+                $sql = "INSERT INTO " . _DB_PREFIX_ . "order_message_lang (
+                    `id_order_message`, 
+                    `name`,
+                    `id_lang`,
+                    `message`
+                ) 
+                VALUES (
+                    '" . pSQL($value['id_order_message']) . "', 
+                    '" . pSQL($value['name']) . "',
+                    '" . pSQL($value['id_lang']) . "',
+                    '" . pSQL($value['message']) . "'
+                )";
+                Db::getInstance()->execute($sql);
+            }
+        }
+        catch(PDOException $exception) {
+            echo "Error: " . $exception->getMessage();
+        }
+        // Cerrar conexion
+        $conn = null;
+    }
+
 
 
     public function testConnection(){
