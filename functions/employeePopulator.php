@@ -1,5 +1,5 @@
 <?php
-class EmploeePopulator{
+class EmployeePopulator{
     
 
     private function populateEmployee($conn, $prefix){            
