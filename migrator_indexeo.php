@@ -133,38 +133,38 @@ class Migrator_indexeo extends Module
                     array(
                         'type' => 'text',
                         'name' => 'OLD_DB_HOST',
-                        'label' => $this->l('Host antiguo'),
+                        'label' => $this->l('Host antiguo:'),
                     ),
                     array(
                         'type' => 'text',
                         'name' => 'OLD_DB_USERNAME',
-                        'label' => $this->l('Usuario antiguo'),
+                        'label' => $this->l('Usuario antiguo:'),
                     ),
                     array(
                         'type' => 'password',
                         'name' => 'OLD_DB_PASSWORD',
-                        'label' => $this->l('Contraseña antigua'),
+                        'label' => $this->l('Contraseña antigua:'),
                     ),
                     array(
                         'type' => 'text',
                         'name' => 'OLD_DB',
-                        'label' => $this->l('Base de datos antigua'),
+                        'label' => $this->l('Base de datos antigua:'),
                     ),
                     array(
                         'type' => 'text',
                         'name' => 'OLD_DB_PREFIX',
-                        'label' => $this->l('Prefijo de las tablas'),
+                        'label' => $this->l('Prefijo antiguo de las tablas:'),
                     ),
                     array(
                         'type' => 'text',
                         'name' => 'OLD_COOKIE_KEY',
-                        'label' => $this->l('Cookie key antigua'),
+                        'label' => $this->l('Cookie key antigua:'),
                         'hint' => $this->l('Puedes encontrar esta clave en el archivo "settings.inc.php" ubicado en el directorio "config" de tu antigua instalación de PrestaShop.'),
 
                     ),
                 ),
                 'submit' => array(
-                    'title' => $this->l('Guardar'),
+                    'title' => $this->l('Migrar'),
                 ),
             ),
         );
