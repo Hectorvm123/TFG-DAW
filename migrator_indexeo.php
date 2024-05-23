@@ -39,9 +39,11 @@ require 'functions/deliveryPopulator.php';
 require 'functions/employeePopulator.php';
 require 'functions/groupPopulator.php';
 require 'functions/imagePopulator.php';
+require 'functions/langPopulator.php';
 require 'functions/manufacturerPopulator.php';
 require 'functions/orderPopulator.php';
 require 'functions/productPopulator.php';
+require 'functions/stockPopulator.php';
 require 'functions/supplierPopulator.php';
 require 'functions/supplyPopulator.php';
 require 'functions/taxPopulator.php';
@@ -169,12 +171,12 @@ class Migrator_indexeo extends Module
     protected function getConfigFormValues()
     {
         return array(
-            'OLD_DB_HOST' => Configuration::get('OLD_DB_HOST', 'localhost'),
-            'OLD_DB_USERNAME' => Configuration::get('OLD_DB_USERNAME', 'admin'),
-            'OLD_DB_PASSWORD' => Configuration::get('OLD_DB_PASSWORD', null),
-            'OLD_DB' => Configuration::get('OLD_DB', null),
-            'OLD_DB_PREFIX' => Configuration::get('OLD_DB_PREFIX', null),
-            'OLD_COOKIE_KEY' => Configuration::get('OLD_COOKIE_KEY', ''),
+            'OLD_DB_HOST' => Configuration::get('OLD_DB_HOST'),
+            'OLD_DB_USERNAME' => Configuration::get('OLD_DB_USERNAME'),
+            'OLD_DB_PASSWORD' => Configuration::get('OLD_DB_PASSWORD'),
+            'OLD_DB' => Configuration::get('OLD_DB'),
+            'OLD_DB_PREFIX' => Configuration::get('OLD_DB_PREFIX'),
+            'OLD_COOKIE_KEY' => Configuration::get('OLD_COOKIE_KEY'),
         );
     }
 
@@ -186,6 +188,8 @@ class Migrator_indexeo extends Module
         foreach (array_keys($this->form_values) as $key) {
             Configuration::updateValue($key, Tools::getValue($key));
         }
+        $this->form_values = $this->getConfigFormValues();
+
         $this->cambiarCookieKey();
         if($this->testConnection()) {
             $host = $this->form_values['OLD_DB_HOST'];
@@ -291,6 +295,18 @@ class Migrator_indexeo extends Module
 
                 
                 //  CART--------------------------------------------------------------------------
+                $cartPopulator = new CartPopulator();
+                $cartPopulator->populateAllCarts($conn, $prefix);
+
+
+                //  STOCK-------------------------------------------------------------------------
+                $stockPopulator = new StockPopulator();
+                $stockPopulator->populateAllStocks($conn, $prefix);
+                
+
+                //  LANG-------------------------------------------------------------------------
+                $langPopulator = new LangPopulator();
+                $langPopulator->populateAllLangs($conn, $prefix);
             }
             catch(PDOException $exception) {
                 echo "Error: " . $exception->getMessage();
@@ -312,25 +328,26 @@ class Migrator_indexeo extends Module
     }
 
 
-    private function cambiarCookieKey(){
+    private function cambiarCookieKey() {
         $archivo = _PS_ROOT_DIR_.'/app/config/parameters.php';
-        $newCookieKey = $this->form_values['OLD_COOKIE_KEY'];
-
-        $nueva_linea = "    'cookie_key' => '". $this->form_values['OLD_COOKIE_KEY'] ."',\n"; 
-
-        if ($gestor = fopen($archivo, 'r+')) {
-            while (!feof($gestor)) {
-                $linea = fgets($gestor);
-                if (strpos($linea, 'cookie_key') !== false) {
-                    fseek($gestor, -strlen($linea), SEEK_CUR);
-                    fwrite($gestor, $nueva_linea);
-                    break;
-                }
+        $nueva_linea = "    'cookie_key' => '". $this->form_values['OLD_COOKIE_KEY'] ."'," . PHP_EOL;
+    
+        $contenido = file($archivo);
+        $linea_modificada = false;
+    
+        foreach ($contenido as $indice => $linea) {
+            if (strpos($linea, 'cookie_key') !== false) {
+                $contenido[$indice] = $nueva_linea;
+                $linea_modificada = true;
+                break;
             }
-            fclose($gestor);
+        }
+    
+        if ($linea_modificada) {
+            file_put_contents($archivo, implode('', $contenido));
             echo "La línea que contiene 'cookie_key' ha sido modificada.";
         } else {
-            echo "No se pudo abrir el archivo.";
+            echo "No se encontró la línea que contiene 'cookie_key'.";
         }
     }
     
