@@ -159,6 +159,8 @@ class Migrator_indexeo extends Module
                         'type' => 'text',
                         'name' => 'OLD_COOKIE_KEY',
                         'label' => $this->l('Cookie key antigua'),
+                        'hint' => $this->l('Puedes encontrar esta clave en el archivo "settings.inc.php" ubicado en el directorio "config" de tu antigua instalación de PrestaShop.'),
+
                     ),
                 ),
                 'submit' => array(
