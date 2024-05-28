@@ -74,7 +74,7 @@ class StockPopulator {
                     '" . pSQL($value['id_shop_group']) . "',
                     '" . pSQL($value['quantity']) . "',
                     0,
-                    '" . pSQL($value['physical_quantity']) . "',
+                    0,
                     '" . pSQL($value['depends_on_stock']) . "',
                     '" . pSQL($value['out_of_stock']) . "',
                     ''
