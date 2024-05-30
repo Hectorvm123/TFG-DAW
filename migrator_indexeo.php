@@ -48,13 +48,12 @@ require 'functions/supplierPopulator.php';
 require 'functions/supplyPopulator.php';
 require 'functions/taxPopulator.php';
 require 'functions/warehousePopulator.php';
+require 'functions/featurePopulator.php';
 
 
 class Migrator_indexeo extends Module
 {
     
-    
-
     protected $config_form = false;
 
     public function __construct()
@@ -126,8 +125,8 @@ class Migrator_indexeo extends Module
         return array(
             'form' => array(
                 'legend' => array(
-                'title' => $this->l('Configurar conexión'),
-                'icon' => 'icon-cogs',
+                    'title' => $this->l('Configurar conexión'),
+                    'icon' => 'icon-cogs',
                 ),
                 'input' => array(
                     array(
@@ -160,7 +159,39 @@ class Migrator_indexeo extends Module
                         'name' => 'OLD_COOKIE_KEY',
                         'label' => $this->l('Cookie key antigua:'),
                         'hint' => $this->l('Puedes encontrar esta clave en el archivo "settings.inc.php" ubicado en el directorio "config" de tu antigua instalación de PrestaShop.'),
-
+                    ),
+                    // Checkboxes múltiples aquí
+                    array(
+                        'type' => 'checkbox',
+                        'name' => 'MY_CHECKBOXES',
+                        'values' => array(
+                            'query' => array(
+                                array('id' => 'address', 'name' => 'Direecciones', 'val' => '1'),
+                                array('id' => 'attachment', 'name' => 'Adjuntos', 'val' => '2'),
+                                array('id' => 'attribute', 'name' => 'Atributos', 'val' => '3'),
+                                array('id' => 'carrier', 'name' => 'Transportistas', 'val' => '4'),
+                                array('id' => 'cart', 'name' => 'Carritos', 'val' => '5'),
+                                array('id' => 'category', 'name' => 'Categorias', 'val' => '6'),
+                                array('id' => 'cms', 'name' => 'CMS', 'val' => '7'),
+                                array('id' => 'customer', 'name' => 'Clientes', 'val' => '8'),
+                                array('id' => 'delivery', 'name' => 'Envios', 'val' => '9'),
+                                array('id' => 'employee', 'name' => 'Empleados', 'val' => '10'),
+                                array('id' => 'group', 'name' => 'Grupos', 'val' => '11'),
+                                array('id' => 'image', 'name' => 'Imagenes', 'val' => '12'),
+                                array('id' => 'lang', 'name' => 'Idiomas', 'val' => '13'),
+                                array('id' => 'manufacturer', 'name' => 'Fabricantes', 'val' => '14'),
+                                array('id' => 'order', 'name' => 'Pedidos', 'val' => '15'),
+                                array('id' => 'product', 'name' => 'Productos', 'val' => '16'),
+                                array('id' => 'stock', 'name' => 'Stock', 'val' => '17'),
+                                array('id' => 'supplier', 'name' => 'Proveedores', 'val' => '18'),
+                                array('id' => 'supply', 'name' => 'Suministros', 'val' => '19'),
+                                array('id' => 'tax', 'name' => 'Impuestos', 'val' => '20'),
+                                array('id' => 'warehouse', 'name' => 'Almacenes', 'val' => '21'),
+                                array('id' => 'feature', 'name' => 'Caracteristicas', 'val' => '22'),
+                            ),
+                            'id' => 'id',
+                            'name' => 'name'
+                        ),
                     ),
                 ),
                 'submit' => array(
@@ -169,17 +200,24 @@ class Migrator_indexeo extends Module
             ),
         );
     }
-
+    
     protected function getConfigFormValues()
     {
-        return array(
+        $values = [
             'OLD_DB_HOST' => Configuration::get('OLD_DB_HOST'),
             'OLD_DB_USERNAME' => Configuration::get('OLD_DB_USERNAME'),
             'OLD_DB_PASSWORD' => Configuration::get('OLD_DB_PASSWORD'),
             'OLD_DB' => Configuration::get('OLD_DB'),
             'OLD_DB_PREFIX' => Configuration::get('OLD_DB_PREFIX'),
             'OLD_COOKIE_KEY' => Configuration::get('OLD_COOKIE_KEY'),
-        );
+        ];
+
+         // Valores de checkboxes
+         $checkboxes = array('address', 'attachment', 'attribute', 'carrier', 'cart', 'category', 'cms', 'customer', 'delivery', 'employee', 'group', 'image', 'lang', 'manufacturer', 'order', 'product', 'stock', 'supplier', 'supply', 'tax', 'warehouse', 'feature');
+         foreach ($checkboxes as $checkbox) {
+            $values['MY_CHECKBOXES_'.$checkbox] = Configuration::get('MY_CHECKBOXES_'.$checkbox);
+        }
+        return $values;
     }
 
 
@@ -190,6 +228,7 @@ class Migrator_indexeo extends Module
         foreach (array_keys($this->form_values) as $key) {
             Configuration::updateValue($key, Tools::getValue($key));
         }
+
         $this->form_values = $this->getConfigFormValues();
 
         $this->cambiarCookieKey();
@@ -205,110 +244,157 @@ class Migrator_indexeo extends Module
                 $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+
                 //  EMPLOYEES----------------------------------------------
-                $employeePopulator = new EmployeePopulator();
-                $employeePopulator->populateAllEmployees($conn, $prefix);
-
-
-                //  CUSTOMERS-----------------------------------------------
-                $customerPopulator = new CustomerPopulator();
-                $customerPopulator->populateAllCustomers($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_employee']){
+                    $employeePopulator = new EmployeePopulator();
+                    $employeePopulator->populateAllEmployees($conn, $prefix);
+                }
                 
+                //  CUSTOMERS-----------------------------------------------
+                if($this->form_values['MY_CHECKBOXES_customer']){
+                    $customerPopulator = new CustomerPopulator();
+                    $customerPopulator->populateAllCustomers($conn, $prefix);
+                }
 
 
                 //  CATEGORIES-----------------------------------------------
-                $categoryPopulator = new CategoryPopulator();
-                $categoryPopulator->populateAllCategories($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_category']){
+                    $categoryPopulator = new CategoryPopulator();
+                    $categoryPopulator->populateAllCategories($conn, $prefix);
+                }
 
 
                 // PRODUCTS--------------------------------------------------
-                $productPopulator = new ProductPopulator();
-                $productPopulator->populateAllProducts($conn, $prefix);
-
+                if($this->form_values['MY_CHECKBOXES_product']){
+                    $productPopulator = new ProductPopulator();
+                    $productPopulator->populateAllProducts($conn, $prefix);
+                }
 
                 //  GROUP---------------------------------------------------------
-                $groupsPopulator = new GroupPopulator();
-                $groupsPopulator->populateAllGroups($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_group']){
+                    $groupsPopulator = new GroupPopulator();
+                    $groupsPopulator->populateAllGroups($conn, $prefix);
+                }
 
 
                 //  ATTRIBUTE---------------------------------------------------------
-                $attributePopulator = new AttributePopulator();
-                $attributePopulator->populateAllAttributes($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_attribute']){
+                    $attributePopulator = new AttributePopulator();
+                    $attributePopulator->populateAllAttributes($conn, $prefix);
+                }
 
 
                 //  CARRIER---------------------------------------------------------
-                $carrierPopulator = new CarrierPopulator();
-                $carrierPopulator->populateAllCarriers($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_carrier']){
+                    $carrierPopulator = new CarrierPopulator();
+                    $carrierPopulator->populateAllCarriers($conn, $prefix);
+                }
 
 
                 // TAX----------------------------------------------------------------------
-                $taxPopulator = new TaxPopulator();
-                $taxPopulator->populateAllTaxes($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_tax']){
+                    $taxPopulator = new TaxPopulator();
+                    $taxPopulator->populateAllTaxes($conn, $prefix);
+                }
 
 
                 //  MANUFACTURER---------------------------------------------------------------
-                $manufacturerPopulator = new ManufacturerPopulator();
-                $manufacturerPopulator->populateAllManufacturers($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_manufacturer']){
+                    $manufacturerPopulator = new ManufacturerPopulator();
+                    $manufacturerPopulator->populateAllManufacturers($conn, $prefix);
+                }
 
 
                 //  SUPPLIER-------------------------------------------------------------------
-                $supplierPopulator = new SupplierPopulator();
-                $supplierPopulator->populateAllSuppliers($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_supplier']){
+                    $supplierPopulator = new SupplierPopulator();
+                    $supplierPopulator->populateAllSuppliers($conn, $prefix);
+                }
 
 
                 //  SUPPLY--------------------------------------------------------------------
-                $supplyPopulator = new SupplyPopulator();
-                $supplyPopulator->populateAllSupplies($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_supply']){
+                    $supplyPopulator = new SupplyPopulator();
+                    $supplyPopulator->populateAllSupplies($conn, $prefix);
+                }
 
 
 
                 //  ATTACHMENT------------------------------------------------------------------
-                $attachmentPopulator = new AttachmentPopulator();
-                $attachmentPopulator->populateAllAttachments($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_attachment']){
+                    $attachmentPopulator = new AttachmentPopulator();
+                    $attachmentPopulator->populateAllAttachments($conn, $prefix);
+                }
 
 
                 // ADDRESS-----------------------------------------------------------------------
-                $addressPopulator = new AddressPopulator();
-                $addressPopulator->populateAllAddresses($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_address']){
+                    $addressPopulator = new AddressPopulator();
+                    $addressPopulator->populateAllAddresses($conn, $prefix);
+                }
 
 
                 //  DELIVERY---------------------------------------------------------------------
-                $deliveryPopulator = new DeliveryPopulator();
-                $deliveryPopulator->populateAllDeliveries($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_delivery']){
+                    $deliveryPopulator = new DeliveryPopulator();
+                    $deliveryPopulator->populateAllDeliveries($conn, $prefix);
+                }
 
 
                 // WAREHOUSE---------------------------------------------------------------------
-                $warehousePopulator = new WarehousePopulator();
-                $warehousePopulator->populateAllWarehouses($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_warehouse']){
+                    $warehousePopulator = new WarehousePopulator();
+                    $warehousePopulator->populateAllWarehouses($conn, $prefix);
+                }
 
 
                 // CMS---------------------------------------------------------------------------
-                $CMSPopulator = new CMSPopulator();
-                $CMSPopulator->populateAllCMS($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_cms']){
+                    $CMSPopulator = new CMSPopulator();
+                    $CMSPopulator->populateAllCMS($conn, $prefix);
+                }
 
 
                 //  IMAGE------------------------------------------------------------------------
-                $imagePopulator = new ImagePopulator();
-                $imagePopulator->populateAllImages($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_image']){
+                    $imagePopulator = new ImagePopulator();
+                    $imagePopulator->populateAllImages($conn, $prefix);
+                }
 
                 // ORDER--------------------------------------------------------------------------
-                $orderPopulator = new OrderPopulator();
-                $orderPopulator->populateAllOrders($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_order']){
+                    $orderPopulator = new OrderPopulator();
+                    $orderPopulator->populateAllOrders($conn, $prefix);
+                }
 
                 
                 //  CART--------------------------------------------------------------------------
-                $cartPopulator = new CartPopulator();
-                $cartPopulator->populateAllCarts($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_cart']){
+                    $cartPopulator = new CartPopulator();
+                    $cartPopulator->populateAllCarts($conn, $prefix);
+                }
 
 
                 //  STOCK-------------------------------------------------------------------------
-                $stockPopulator = new StockPopulator();
-                $stockPopulator->populateAllStocks($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_stock']){
+                    $stockPopulator = new StockPopulator();
+                    $stockPopulator->populateAllStocks($conn, $prefix);
+                }
                 
 
                 //  LANG-------------------------------------------------------------------------
-                $langPopulator = new LangPopulator();
-                $langPopulator->populateAllLangs($conn, $prefix);
+                if($this->form_values['MY_CHECKBOXES_lang']){
+                    $langPopulator = new LangPopulator();
+                    $langPopulator->populateAllLangs($conn, $prefix);
+                }
+
+                //  Feature-------------------------------------------------------------------------
+                if($this->form_values['MY_CHECKBOXES_feature']){
+                    $featurePopulator = new FeaturePopulator();
+                    $featurePopulator->populateAllFeatures($conn, $prefix);
+                }
+
             }
             catch(PDOException $exception) {
                 echo "Error: " . $exception->getMessage();
