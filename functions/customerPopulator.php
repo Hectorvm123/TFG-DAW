@@ -248,6 +248,6 @@ class CustomerPopulator{
         $this->populateCustomerMessage($conn,$prefix);
         $this->populateCustomerMessageSyncImap($conn,$prefix);
         $this->populateCustomerThread($conn,$prefix);
-        $this->populateMailAlertCustomerOOS($conn,$prefix);
+        //$this->populateMailAlertCustomerOOS($conn,$prefix);
     }
 }

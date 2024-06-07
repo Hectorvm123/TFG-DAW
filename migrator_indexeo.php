@@ -84,16 +84,8 @@
 
         public function getContent()
         {
-            $output = '';
-
             if (((bool)Tools::isSubmit('submitMigrator_indexeoModule')) == true) {
-                if($this->postProcess()){
-                    $output .= $this->displayConfirmation($this->trans('The settings have been updated.', [], 'Admin.Notifications.Success'));
-                
-                } else {
-                    $errors[] = $this->l('Ha ocurrido un error.');
-                    $this->displayError(implode('<br />', $errors));
-                }
+                $this->postProcess();
             }
             //$output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
 
@@ -224,6 +216,29 @@
             return $values;
         }
 
+        private function cambiarCookieKey() {
+            $archivo = _PS_ROOT_DIR_.'/app/config/parameters.php';
+            $nueva_linea = "    'cookie_key' => '". $this->form_values['OLD_COOKIE_KEY'] ."'," . PHP_EOL;
+        
+            $contenido = file($archivo);
+            $linea_modificada = false;
+        
+            foreach ($contenido as $indice => $linea) {
+                if (strpos($linea, 'cookie_key') !== false) {
+                    $contenido[$indice] = $nueva_linea;
+                    $linea_modificada = true;
+                    break;
+                }
+            }
+
+            if ($linea_modificada) {
+                file_put_contents($archivo, implode('', $contenido));
+                echo "La línea que contiene 'cookie_key' ha sido modificada.";
+            } else {
+                echo "No se encontró la línea que contiene 'cookie_key'.";
+            }
+
+        }
 
         protected function postProcess()
         {
@@ -422,23 +437,6 @@
             if (Tools::getValue('configure') == $this->name) {
                 $this->context->controller->addJS($this->_path.'views/js/back.js');
                 $this->context->controller->addCSS($this->_path.'views/css/back.css');
-            }
-        }
-
-
-        private function cambiarCookieKey() {
-            $archivo = _PS_ROOT_DIR_.'/app/config/parameters.php';
-            $nueva_linea = "    'cookie_key' => '". $this->form_values['OLD_COOKIE_KEY'] ."'," . PHP_EOL;
-        
-            $contenido = file($archivo);
-            $linea_modificada = false;
-        
-            foreach ($contenido as $indice => $linea) {
-                if (strpos($linea, 'cookie_key') !== false) {
-                    $contenido[$indice] = $nueva_linea;
-                    $linea_modificada = true;
-                    break;
-                }
             }
         }
         
